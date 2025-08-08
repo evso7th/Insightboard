@@ -51,7 +51,7 @@ export default function Dashboard({ initialData }: DashboardProps) {
           <TabsTrigger value="demand-supply">Спрос vs Предложение</TabsTrigger>
           <TabsTrigger value="company-activity">Активность по компаниям</TabsTrigger>
           <TabsTrigger value="niche-expertise">Нишевые экспертизы</TabsTrigger>
-          <TabsTrigger value="geo-rates">География и ставки</TabsTrigger>
+          <TabsTrigger value="geo-rates">Ставки</TabsTrigger>
           <TabsTrigger value="invitation-network">Сеть приглашений</TabsTrigger>
         </TabsList>
         <TabsContent value="general-activity" className="space-y-4">

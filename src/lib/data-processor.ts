@@ -416,7 +416,7 @@ export const getNicheExpertise = (data: MessageData[]) => {
   };
 };
 
-// 5. Geography and Rates
+// 5. Rates
 const parseRate = (rate: any): number[] => {
     if (rate === null || rate === undefined) return [];
     
@@ -424,27 +424,18 @@ const parseRate = (rate: any): number[] => {
 
     if (!/\d/.test(strRate)) return [];
 
-    // Handles ranges like 1000-2000 or 1000/2000
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
     return numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
 };
 
 export const getGeoAndRates = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { uniqueLocations: 0, validRatesCount: 0, averageRate: 0, allLocations: [], rateData: [], boxPlotData: [] };
+  if (!data || data.length === 0) return { validRatesCount: 0, averageRate: 0, rateData: [], boxPlotData: [] };
 
   const allRates: number[] = [];
-  const locationCounts: { [key: string]: number } = {};
-  const rateByRole: { [key:string]: { rates: number[], geos: Set<string> } } = {};
+  const rateByRole: { [key:string]: { rates: number[] } } = {};
 
   data.forEach(item => {
-    const locationValue = item['Гео / локация'];
-    const location = locationValue && String(locationValue).trim() ? String(locationValue).trim() : null;
-    
-    if (location) {
-      locationCounts[location] = (locationCounts[location] || 0) + 1;
-    }
-
     const rates = parseRate(item['Ставка (руб/ч)']);
     if (rates.length > 0) {
       allRates.push(...rates);
@@ -453,19 +444,14 @@ export const getGeoAndRates = (data: MessageData[]) => {
       roleList.forEach(role => {
           if (!role) return;
           if (!rateByRole[role]) {
-              rateByRole[role] = { rates: [], geos: new Set() };
+              rateByRole[role] = { rates: [] };
           }
           rateByRole[role].rates.push(...rates);
-          if (location) rateByRole[role].geos.add(location);
       })
     }
   });
 
   const averageRate = allRates.length > 0 ? allRates.reduce((a, b) => a + b, 0) / allRates.length : 0;
-  
-  const allLocations = Object.entries(locationCounts)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
 
   const rateData = Object.entries(rateByRole).map(([role, data]) => {
     const rates = data.rates;
@@ -476,16 +462,14 @@ export const getGeoAndRates = (data: MessageData[]) => {
       averageRate: Math.round(avg),
       minRate: Math.min(...rates),
       maxRate: Math.max(...rates),
-      geo: Array.from(data.geos).join(', ') || 'N/A',
+      count: rates.length,
     };
   }).filter((item): item is NonNullable<typeof item> => item !== null)
     .sort((a,b) => b.averageRate - a.averageRate);
   
   return {
-    uniqueLocations: Object.keys(locationCounts).length,
     validRatesCount: allRates.length,
     averageRate,
-    allLocations,
     rateData,
     boxPlotData: rateData.filter(r => r.averageRate > 0).slice(0, 10),
   };
