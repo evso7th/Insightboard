@@ -2,7 +2,6 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { Building, Users, Briefcase, ArrowLeft, User, UserCheck } from "lucide-react";
-import { KpiCard } from "@/components/kpi-card";
 import { getCompanyActivity, getCompanyDetail } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
@@ -152,12 +151,41 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 xl:col-span-3">
-        <KpiCard title="Топ-1 компания (предл.)" value={topOfferingCompany} icon={Briefcase} />
-        <KpiCard title="Топ-1 автор (предл.)" value={topOfferingAuthor} icon={User} />
-        <KpiCard title="Топ-1 компания (спрос)" value={topDemandingCompany} icon={Users} />
-        <KpiCard title="Топ-1 автор (спрос)" value={topDemandingAuthor} icon={UserCheck} />
-        <KpiCard title="Общее число упоминаний" value={totalMentions} icon={Building} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-3">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Топ по предложениям</CardTitle>
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-lg font-bold">{topOfferingCompany}</div>
+                <p className="text-xs text-muted-foreground">ТОП-1 Компания</p>
+                <div className="text-lg font-bold mt-2">{topOfferingAuthor}</div>
+                <p className="text-xs text-muted-foreground">ТОП-1 Автор</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Топ по спросу</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-lg font-bold">{topDemandingCompany}</div>
+                <p className="text-xs text-muted-foreground">ТОП-1 Компания</p>
+                <div className="text-lg font-bold mt-2">{topDemandingAuthor}</div>
+                <p className="text-xs text-muted-foreground">ТОП-1 Автор</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Общее число упоминаний</CardTitle>
+                <Building className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{totalMentions}</div>
+                <p className="text-xs text-muted-foreground">Всего компаний и авторов</p>
+            </CardContent>
+        </Card>
       </div>
       
       <Card className="xl:col-span-2">
