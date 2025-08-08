@@ -76,9 +76,6 @@ Your entire output must be a single JSON object with one key: "extractedData", w
 Raw text to analyze:
 {{{rawText}}}
 `,
-  config: {
-    json: true,
-  },
 });
 
 const extractStructuredDataFlow = ai.defineFlow(
