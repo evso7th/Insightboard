@@ -43,7 +43,7 @@ const XAxisRoleTick = (props: any) => {
 
 
 export function CompanyActivityView({ data }: { data: MessageData[] }) {
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top10CompanyChart } = useMemo(() => {
@@ -51,27 +51,27 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   }, [data]);
 
   const { companyDetails, uniqueYearsInCompany } = useMemo(() => {
-    if (!selectedCompany) return { companyDetails: [], uniqueYearsInCompany: [] };
-    return getCompanyDetail(data, selectedCompany, selectedYear);
-  }, [data, selectedCompany, selectedYear]);
+    if (!selectedParticipant) return { companyDetails: [], uniqueYearsInCompany: [] };
+    return getCompanyDetail(data, selectedParticipant, selectedYear);
+  }, [data, selectedParticipant, selectedYear]);
 
-  const handleCompanySelect = (company: string) => {
-    setSelectedCompany(company);
+  const handleParticipantSelect = (participant: string) => {
+    setSelectedParticipant(participant);
     setSelectedYear(null);
   };
 
   const handleBackToOverview = () => {
-    setSelectedCompany(null);
+    setSelectedParticipant(null);
     setSelectedYear(null);
   };
 
   const aiInput = {
-    dataSummary: selectedCompany 
-      ? `Анализ для компании "${selectedCompany}" за ${selectedYear || 'все время'}. Данные показывают спрос и предложение по ролям.`
-      : `Топ-1 компания по предложениям: ${topOfferingCompany}, Топ-1 компания по спросу: ${topDemandingCompany}, Общее число упоминаний компаний: ${totalMentions}.`,
-    viewDescription: selectedCompany
-      ? `Это детальное представление активности компании "${selectedCompany}", показывающее разбивку по спросу и предложению для каждой роли.`
-      : "Это представление фокусируется на активности различных компаний. Оно определяет ведущие компании по предложениям и спросу и позволяет детализировать данные по каждой из них."
+    dataSummary: selectedParticipant 
+      ? `Анализ для участника "${selectedParticipant}" за ${selectedYear || 'все время'}. Данные показывают спрос и предложение по ролям.`
+      : `Топ-1 участник по предложениям: ${topOfferingCompany}, Топ-1 участник по спросу: ${topDemandingCompany}, Общее число упоминаний участников: ${totalMentions}.`,
+    viewDescription: selectedParticipant
+      ? `Это детальное представление активности участника "${selectedParticipant}", показывающее разбивку по спросу и предложению для каждой роли.`
+      : "Это представление фокусируется на активности различных участников. Оно определяет ведущих участников по предложениям и спросу и позволяет детализировать данные по каждому из них."
   };
 
   const chartConfig = {
@@ -79,18 +79,18 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     demands: { label: "Спрос", color: "hsl(var(--accent))" },
   };
 
-  if (selectedCompany) {
+  if (selectedParticipant) {
     return (
       <div className="flex flex-col gap-4">
         <Button onClick={handleBackToOverview} variant="ghost" className="self-start">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Вернуться к списку компаний
+          Вернуться к списку участников
         </Button>
         <Card>
           <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle>Детализация по компании: {selectedCompany}</CardTitle>
+                <CardTitle>Детализация по участнику: {selectedParticipant}</CardTitle>
                 <CardDescription>Спрос и предложение по ролям за {selectedYear || 'все время'}</CardDescription>
               </div>
                <div className="flex items-center gap-2 flex-wrap">
@@ -147,19 +147,19 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
-        <KpiCard title="Топ-1 компания по предложениям" value={topOfferingCompany} icon={Briefcase} />
-        <KpiCard title="Топ-1 компания по спросу" value={topDemandingCompany} icon={Users} />
+        <KpiCard title="Топ-1 участник по предложениям" value={topOfferingCompany} icon={Briefcase} />
+        <KpiCard title="Топ-1 участник по спросу" value={topDemandingCompany} icon={Users} />
         <KpiCard title="Общее число упоминаний" value={totalMentions} icon={Building} />
       </div>
       
       <Card className="xl:col-span-2">
         <CardHeader>
-          <CardTitle>ТОП-10 компаний по числу предложений</CardTitle>
+          <CardTitle>ТОП-10 участников по числу предложений</CardTitle>
           <CardDescription>Нажмите на столбец для детализации</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig} className="h-full w-full">
-            <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleCompanySelect(e.activePayload[0].payload.name)}>
+            <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick />} tickLine={false} axisLine={false} />
@@ -174,7 +174,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Активность компаний</CardTitle>
+          <CardTitle>Активность участников</CardTitle>
           <CardDescription>Нажмите на строку для детализации</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px]">
@@ -182,7 +182,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Компания</TableHead>
+                  <TableHead>Участник</TableHead>
                   <TableHead>Предложения</TableHead>
                   <TableHead>Спрос</TableHead>
                   <TableHead>Уник. роли</TableHead>
@@ -190,7 +190,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
               </TableHeader>
               <TableBody>
                 {companyData.map((row) => (
-                  <TableRow key={row.name} onClick={() => handleCompanySelect(row.name)} className="cursor-pointer">
+                  <TableRow key={row.name} onClick={() => handleParticipantSelect(row.name)} className="cursor-pointer">
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell>{row.offers}</TableCell>
                     <TableCell>{row.demands}</TableCell>

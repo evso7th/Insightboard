@@ -247,10 +247,10 @@ export const getCompanyActivity = (data: MessageData[]) => {
       } else if (eventType === 'спрос') {
         companies[company].demands++;
       }
-      if (item['Роль']) {
-        const roleList = processRoles(item['Роль']);
-        roleList.forEach(role => companies[company].roles.add(role));
-      }
+      const roleList = processRoles(item['Роль']);
+      roleList.forEach(role => {
+        if(role) companies[company].roles.add(role)
+      });
     }
   });
 
@@ -273,17 +273,17 @@ export const getCompanyActivity = (data: MessageData[]) => {
   };
 };
 
-export const getCompanyDetail = (data: MessageData[], companyName: string, year: number | null) => {
-  const allCompanyData = data.filter(d => {
-      let currentCompany = d['Компания'] ? String(d['Компания']).trim() : '';
-      if (!currentCompany || currentCompany === '-' || currentCompany.toLowerCase() === 'n/a' || currentCompany.toLowerCase() === 'na') {
-        currentCompany = d['Отправитель'] ? String(d['Отправитель']).trim() : '';
+export const getCompanyDetail = (data: MessageData[], participantName: string, year: number | null) => {
+  const allParticipantData = data.filter(d => {
+      let currentParticipant = d['Компания'] ? String(d['Компания']).trim() : '';
+      if (!currentParticipant || currentParticipant === '-' || currentParticipant.toLowerCase() === 'n/a' || currentParticipant.toLowerCase() === 'na') {
+        currentParticipant = d['Отправитель'] ? String(d['Отправитель']).trim() : '';
       }
-      return currentCompany === companyName;
+      return currentParticipant === participantName;
   });
 
   const years = new Set<number>();
-  const datedData = allCompanyData.map(item => {
+  const datedData = allParticipantData.map(item => {
     const date = parseDate(item['Дата']);
     if (date) {
       years.add(date.getUTCFullYear());
@@ -298,6 +298,7 @@ export const getCompanyDetail = (data: MessageData[], companyName: string, year:
   filteredData.forEach(item => {
     const roleList = processRoles(item['Роль']);
     roleList.forEach(role => {
+        if (!role) return;
         if (!roles[role]) {
             roles[role] = { offers: 0, demands: 0 };
         }
