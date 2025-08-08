@@ -226,41 +226,45 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 
 // 3. Activity by Companies
 // List of terms that are likely roles/tech and not author names.
-const IGNORE_LIST = new Set(['qa', 'c#', 'devops', 'python', 'react', 'php', 'linux', 'vue', 'go', 'backend', 'frontend', 'analyst']);
+const IGNORE_LIST = new Set(['qa', 'c#', 'devops', 'python', 'react', 'php', 'linux', 'vue', 'go', 'backend', 'frontend', 'analyst', 'project manager', 'product manager', 'designer', 'node.js', 'javascript']);
 
 export const getCompanyActivity = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
 
-  const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; originalName: string } } = {};
+  const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; originalName: string, isAuthor: boolean } } = {};
 
   data.forEach(item => {
     let originalName: string;
-    let isAuthor = false;
+    let isAuthorFlag = false;
 
     const companyName = item['Компания'] ? String(item['Компания']).trim() : '';
     const authorName = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
     
     if (!companyName || companyName === '-' || companyName.toLowerCase() === 'n/a' || companyName.toLowerCase() === 'na') {
       originalName = authorName;
-      isAuthor = true;
+      isAuthorFlag = true;
     } else {
       originalName = companyName;
     }
 
     if (!originalName) return;
 
-    // Filter out participants if they are authors and their name is in the ignore list.
     const key = originalName.toLowerCase();
-    if (isAuthor && IGNORE_LIST.has(key.split(/[,/]/)[0].trim())) {
-      return;
+    
+    // Enhanced Ignore List Check for authors
+    if (isAuthorFlag) {
+        const authorWords = key.toLowerCase().split(/[\s,./]+/);
+        const isIgnored = authorWords.some(word => IGNORE_LIST.has(word));
+        if(isIgnored) return;
     }
 
     if (!participants[key]) {
-      participants[key] = { offers: 0, demands: 0, roles: new Set(), originalName: originalName };
+      participants[key] = { offers: 0, demands: 0, roles: new Set(), originalName: originalName, isAuthor: isAuthorFlag };
     }
     
-    // Always prefer the non-author name if a participant appears as both
-    if (!isAuthor && participants[key].originalName.toLowerCase() !== originalName.toLowerCase()) {
+    // If we see a participant that was an author, but now has a company name, update it to be a company.
+    if (!isAuthorFlag && participants[key].isAuthor) {
+        participants[key].isAuthor = false;
         participants[key].originalName = originalName;
     }
     
@@ -277,17 +281,13 @@ export const getCompanyActivity = (data: MessageData[]) => {
     });
   });
 
-  const allParticipants = Object.entries(participants).map(([key, data]) => {
-      const companyInSheet = String(key).toLowerCase();
-      const isActuallyAuthor = !data.originalName.includes(companyInSheet)
-      return {
-        name: data.originalName,
-        offers: data.offers,
-        demands: data.demands,
-        uniqueRoles: data.roles.size,
-        isAuthor: isActuallyAuthor
-      };
-  });
+  const allParticipants = Object.values(participants).map(p => ({
+      name: p.originalName,
+      offers: p.offers,
+      demands: p.demands,
+      uniqueRoles: p.roles.size,
+      isAuthor: p.isAuthor
+  }));
   
   const realCompanies = allParticipants.filter(p => !p.isAuthor);
   const authorsAsCompanies = allParticipants.filter(p => p.isAuthor);
@@ -327,7 +327,7 @@ export const getCompanyDetail = (data: MessageData[], participantName: string, y
       if (!currentParticipant || currentParticipant === '-' || currentParticipant.toLowerCase() === 'n/a' || currentParticipant.toLowerCase() === 'na') {
         currentParticipant = d['Отправитель'] ? String(d['Отправитель']).trim() : '';
       }
-      return currentParticipant === participantName;
+      return currentParticipant.toLowerCase() === participantName.toLowerCase();
   });
 
   const years = new Set<number>();
@@ -435,10 +435,8 @@ const parseRate = (rate: any): number[] => {
 
     if (!/\d/.test(strRate)) return [];
     
-    // Split by common range delimiters
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
-    // Filter out NaN and unreasonable values
     return numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
 };
 
@@ -480,11 +478,13 @@ export const getGeoAndRates = (data: MessageData[]) => {
   }).filter((item): item is NonNullable<typeof item> => item !== null)
     .sort((a,b) => b.count - a.count);
   
+  const boxPlotData = rateData.filter(r => r.averageRate > 0).slice(0, 10);
+  
   return {
     validRatesCount: allRates.length,
     averageRate,
     rateData,
-    boxPlotData: rateData.filter(r => r.averageRate > 0).slice(0, 10),
+    boxPlotData,
   };
 };
 
