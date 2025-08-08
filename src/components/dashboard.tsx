@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -17,11 +18,13 @@ interface DashboardProps {
 
 export default function Dashboard({ initialData }: DashboardProps) {
   const [data, setData] = useState<MessageData[]>(initialData);
+  const [activeFileName, setActiveFileName] = useState<string>("TG group parsed.xlsx");
 
-  const handleDataLoaded = (newData: any[]) => {
+  const handleDataLoaded = (newData: any[], fileName: string) => {
     // Basic validation, can be improved
     if (newData.length > 0 && 'Отправитель' in newData[0] && 'Тип события' in newData[0]) {
       setData(newData as MessageData[]);
+      setActiveFileName(fileName);
     } else {
       // You might want to show an error toast here
       console.error("Uploaded data does not match the expected format.");
@@ -32,7 +35,14 @@ export default function Dashboard({ initialData }: DashboardProps) {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
         <h1 className="text-3xl font-bold tracking-tight">InsightBoard</h1>
-        <DataUploader onDataLoaded={handleDataLoaded} />
+        <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end text-right">
+                <DataUploader onDataLoaded={handleDataLoaded} />
+                <p className="text-xs text-muted-foreground mt-1">
+                    Активный файл: <span className="font-semibold">{activeFileName}</span>
+                </p>
+            </div>
+        </div>
       </div>
       
       <Tabs defaultValue="general-activity" className="space-y-4">

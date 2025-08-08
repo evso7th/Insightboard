@@ -1,3 +1,4 @@
+
 'use client';
 import { Upload } from 'lucide-react';
 import { Button } from './ui/button';
@@ -8,7 +9,7 @@ import React from 'react';
 import * as XLSX from 'xlsx';
 
 interface DataUploaderProps {
-  onDataLoaded: (data: any[]) => void;
+  onDataLoaded: (data: any[], fileName: string) => void;
 }
 
 export function DataUploader({ onDataLoaded }: DataUploaderProps) {
@@ -19,13 +20,15 @@ export function DataUploader({ onDataLoaded }: DataUploaderProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const fileName = file.name;
+
     if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
       Papa.parse(file, {
         header: true,
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: (results) => {
-          onDataLoaded(results.data);
+          onDataLoaded(results.data, fileName);
           toast({ title: 'Success', description: 'CSV data loaded successfully.' });
         },
         error: (error: any) => {
@@ -37,7 +40,7 @@ export function DataUploader({ onDataLoaded }: DataUploaderProps) {
       reader.onload = (e) => {
         try {
           const json = JSON.parse(e.target?.result as string);
-          onDataLoaded(json);
+          onDataLoaded(json, fileName);
           toast({ title: 'Success', description: 'JSON data loaded successfully.' });
         } catch (error: any) {
           toast({ variant: 'destructive', title: 'Error', description: `Failed to parse JSON: ${error.message}` });
@@ -53,7 +56,7 @@ export function DataUploader({ onDataLoaded }: DataUploaderProps) {
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet);
-                onDataLoaded(json);
+                onDataLoaded(json, fileName);
                 toast({ title: 'Success', description: 'XLSX data loaded successfully.' });
             } catch (error: any) {
                 toast({ variant: 'destructive', title: 'Error', description: `Failed to parse XLSX: ${error.message}` });
@@ -71,15 +74,14 @@ export function DataUploader({ onDataLoaded }: DataUploaderProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <>
       <Button asChild variant="outline" size="sm">
         <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2">
           <Upload className="h-4 w-4" />
-          Upload Data
+          Загрузить новый файл
         </label>
       </Button>
       <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".csv, .json, .xlsx" ref={fileInputRef} />
-      <p className="text-xs text-muted-foreground hidden sm:block">Upload a new CSV, JSON or XLSX file.</p>
-    </div>
+    </>
   );
 }
