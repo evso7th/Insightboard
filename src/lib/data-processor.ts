@@ -271,7 +271,7 @@ export const getCompanyDetail = (data: MessageData[], company: string, year: num
       years.add(date.getUTCFullYear());
     }
     return { ...item, dateObj: date };
-  }).filter(item => item.dateObj !== null);
+  }).filter((item): item is typeof item & { dateObj: Date } => item.dateObj !== null);
 
   const filteredData = year ? datedData.filter(item => item.dateObj?.getUTCFullYear() === year) : datedData;
 
