@@ -26,7 +26,7 @@ const parseDate = (dateString: string): Date | null => {
         
         const date = new Date(Date.UTC(year, month, day));
 
-        if (!isNaN(date.getTime()) && date.getUTCFullYear() >= 2000) {
+        if (!isNaN(date.getTime()) && date.getUTCFullYear() >= 2000 && date.getUTCFullYear() < 2030) {
             return date;
         }
     }
@@ -49,7 +49,7 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
     };
   }
 
-  // Calculate participant counts on the full dataset
+  // Calculate participant counts on the full dataset, before any filtering
   const participantActivity = countBy(data, 'Отправитель');
   const participantsWithCounts = Object.entries(participantActivity)
     .map(([name, count]) => ({ name, count: count as number }))
@@ -65,7 +65,9 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
   const counts = countBy(filteredData, 'Тип события');
 
   // Calculate activity by date for the filtered data
-  const activityByDate = Object.entries(countBy(filteredData.filter(d => d['Дата']), 'Дата'))
+  const activityByDateCounts = countBy(filteredData.filter(d => d['Дата']), 'Дата');
+
+  const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
     .filter(item => item.dateObj !== null)
     .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime());
@@ -131,7 +133,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
   data.forEach(item => {
     const company = item['Компания'] ? String(item['Компания']).trim() : '';
     // Filter out empty or placeholder company names
-    if (company && company !== '-' && company.toLowerCase() !== 'n/a') {
+    if (company && company !== '-' && company.toLowerCase() !== 'n/a' && company.toLowerCase() !== 'na') {
       if (!companies[company]) {
         companies[company] = { offers: 0, demands: 0, roles: new Set() };
       }
@@ -287,6 +289,3 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
-
-
-    
