@@ -89,22 +89,7 @@ const extractStructuredDataFlow = ai.defineFlow(
     if (!output) {
       throw new Error("AI failed to return structured data.");
     }
-
-    if (typeof output === 'string') {
-        try {
-            const cleanedString = output.replace(/^```json\s*|```\s*$/g, '');
-            output = JSON.parse(cleanedString);
-        } catch (e) {
-            console.error("Failed to parse string output from AI:", e);
-            throw new Error("AI returned a malformed string. Could not parse as JSON.");
-        }
-    }
     
-    if (!output || !Array.isArray(output.extractedData)) {
-      console.error("Parsed output is not in the expected format:", output);
-      throw new Error("AI output format is incorrect after parsing.");
-    }
-    
-    return { extractedData: output.extractedData };
+    return output;
   }
 );

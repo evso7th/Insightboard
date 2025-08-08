@@ -16,7 +16,7 @@ export async function processChatlogFile(): Promise<{ data?: MessageData[], erro
         }
 
         const lines = fileContent.data.split('\n');
-        const chunkSize = 200; // Process 200 lines at a time
+        const chunkSize = 500; // Process 500 lines at a time
         let allExtractedData: Omit<MessageData, '№ стр.'>[] = [];
 
         for (let i = 0; i < lines.length; i += chunkSize) {
@@ -32,7 +32,7 @@ export async function processChatlogFile(): Promise<{ data?: MessageData[], erro
                  console.error(`Error processing chunk starting at line ${i}:`, chunkError);
                  // Optionally skip the chunk and continue, or fail the whole process
                  // For now, we'll let it fail to be aware of the issue.
-                 throw new Error(`Failed to process a chunk of the log file: ${chunkError.message}`);
+                 return { error: `Failed to process a chunk of the log file: ${chunkError.message}` };
             }
         }
 
