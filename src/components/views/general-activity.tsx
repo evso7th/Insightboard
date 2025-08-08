@@ -12,14 +12,23 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { subDays, parse } from 'date-fns';
+
+const TIME_RANGES = [
+  { value: 0, label: 'Все время' },
+  { value: 1, label: 'Год' },
+  { value: 2, label: 'Месяц' },
+  { value: 3, label: 'Неделя' },
+];
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
+  const [timeRangeIndex, setTimeRangeIndex] = useState(0);
 
   const { participantsWithCounts, top10Participants, totalEvents: allEvents } = useMemo(() => {
     const metrics = getGeneralActivityMetrics(data);
-    const participantMetrics = getParticipantMetrics(data);
-    return { ...metrics, totalEvents: participantMetrics.totalEvents };
+    return { ...metrics, totalEvents: data.length };
   }, [data]);
   
   const {
@@ -33,8 +42,40 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       ? data.filter(d => d['Отправитель'] === selectedParticipant)
       : data;
       
-    return getParticipantMetrics(filteredData);
-  }, [data, selectedParticipant]);
+    const metrics = getParticipantMetrics(filteredData);
+
+    const now = new Date();
+    let startDate: Date | null = null;
+    switch (timeRangeIndex) {
+      case 1: // Year
+        startDate = subDays(now, 365);
+        break;
+      case 2: // Month
+        startDate = subDays(now, 30);
+        break;
+      case 3: // Week
+        startDate = subDays(now, 7);
+        break;
+      default: // All time
+        startDate = null;
+    }
+    
+    const timeFilteredActivity = startDate 
+      ? metrics.activityByDate.filter(d => {
+          try {
+            const itemDate = parse(d.date, 'dd.MM.yy', new Date());
+            return itemDate >= startDate!;
+          } catch(e) {
+            return false;
+          }
+        })
+      : metrics.activityByDate;
+
+    return {
+      ...metrics,
+      activityByDate: timeFilteredActivity,
+    };
+  }, [data, selectedParticipant, timeRangeIndex]);
   
   const aiInput = {
     dataSummary: `Статистика для ${selectedParticipant || 'всех участников'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
@@ -101,6 +142,27 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                 <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
               </LineChart>
             </ChartContainer>
+          </CardContent>
+           <CardContent className="pt-4 flex items-center gap-4">
+            <Slider
+              defaultValue={[timeRangeIndex]}
+              min={0}
+              max={TIME_RANGES.length - 1}
+              step={1}
+              onValueChange={(value) => setTimeRangeIndex(value[0])}
+              className="w-1/2 mx-auto"
+            />
+            <div className="flex w-1/2 justify-between text-xs text-muted-foreground">
+              {TIME_RANGES.map((range, index) => (
+                <span 
+                  key={range.value} 
+                  className={`cursor-pointer ${timeRangeIndex === index ? 'font-bold text-foreground' : ''}`}
+                  onClick={() => setTimeRangeIndex(index)}
+                >
+                  {range.label}
+                </span>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -186,3 +248,4 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
