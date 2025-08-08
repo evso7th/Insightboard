@@ -66,7 +66,7 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
 
   // Calculate activity by date for the filtered data
   const activityByDateCounts = countBy(filteredData.filter(d => d['Дата']), 'Дата');
-
+  
   const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
     .filter(item => item.dateObj !== null)
@@ -79,8 +79,8 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
     invitations: counts['приглашение'] || 0,
     participantsWithCounts, // This should contain all participants for the dropdown
     top10Participants, // This is static based on all data
-    activityByDate, // This is now correctly filtered
-    latestEvents: filteredData.slice(-20).reverse(), // This is also correctly filtered
+    activityByDate,
+    latestEvents: filteredData.slice(-20).reverse(),
   };
 };
 
