@@ -27,7 +27,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
   };
   
   return (
-    <div className="grid gap-4 md:gap-8">
+    <div className="flex flex-col gap-4 md:gap-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChartIcon} />
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
@@ -41,9 +41,9 @@ export function RatesView({ data }: { data: MessageData[] }) {
             <CardContent className="h-[350px] w-full pl-2">
                 <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 70 }}>
+                        <BarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 50 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
+                            <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} interval={0}/>
                             <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={['dataMin - 1000', 'auto']} />
                             <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
                             <Bar dataKey="averageRate" fill="hsl(var(--chart-2))" name="Сред. ставка" radius={[4, 4, 0, 0]}>
