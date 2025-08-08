@@ -1,0 +1,68 @@
+'use client';
+import { Upload } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { useToast } from '@/hooks/use-toast';
+import Papa from 'papaparse';
+import React from 'react';
+
+interface DataUploaderProps {
+  onDataLoaded: (data: any[]) => void;
+}
+
+export function DataUploader({ onDataLoaded }: DataUploaderProps) {
+  const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          onDataLoaded(results.data);
+          toast({ title: 'Success', description: 'CSV data loaded successfully.' });
+        },
+        error: (error: any) => {
+          toast({ variant: 'destructive', title: 'Error', description: `Failed to parse CSV: ${error.message}` });
+        },
+      });
+    } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const json = JSON.parse(e.target?.result as string);
+          onDataLoaded(json);
+          toast({ title: 'Success', description: 'JSON data loaded successfully.' });
+        } catch (error: any) {
+          toast({ variant: 'destructive', title: 'Error', description: `Failed to parse JSON: ${error.message}` });
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      toast({ variant: 'destructive', title: 'Error', description: 'Unsupported file type. Please upload a CSV or JSON file.' });
+    }
+
+    // Reset file input
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button asChild variant="outline" size="sm">
+        <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          Upload Data
+        </label>
+      </Button>
+      <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".csv, .json" ref={fileInputRef} />
+      <p className="text-xs text-muted-foreground hidden sm:block">Upload a new CSV or JSON file.</p>
+    </div>
+  );
+}
