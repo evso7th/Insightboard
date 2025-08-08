@@ -12,11 +12,18 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  const { participantsWithCounts, top10Participants, totalEvents: allEvents } = useMemo(() => {
+  const { 
+    participantsWithCounts, 
+    top10Participants, 
+    totalEvents: allEvents,
+    uniqueYears,
+  } = useMemo(() => {
     return getGeneralActivityMetrics(data);
   }, [data]);
   
@@ -27,16 +34,16 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     activityByDate,
     latestEvents,
   } = useMemo(() => {
-    const filteredData = selectedParticipant
+    const filteredByParticipantData = selectedParticipant
       ? data.filter(d => d['Отправитель'] === selectedParticipant)
       : data;
       
-    return getParticipantMetrics(filteredData);
-  }, [data, selectedParticipant]);
+    return getParticipantMetrics(filteredByParticipantData, selectedYear);
+  }, [data, selectedParticipant, selectedYear]);
   
   const aiInput = {
-    dataSummary: `Статистика для ${selectedParticipant || 'всех участников'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
-    viewDescription: `Это общая сводка по активности для ${selectedParticipant || 'всех участников'}. Здесь показаны общие количества различных типов событий и визуализирована динамика активности по времени.`
+    dataSummary: `Статистика для ${selectedParticipant || 'всех участников'} за ${selectedYear || 'всё время'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
+    viewDescription: `Это общая сводка по активности для ${selectedParticipant || 'всех участников'} за ${selectedYear || 'всё время'}. Здесь показаны общие количества различных типов событий и визуализирована динамика активности по времени.`
   };
 
   const chartConfig = {
@@ -84,9 +91,17 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       <div className="mb-4 md:mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+               <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
+               <div className="flex items-center gap-2">
+                <Button variant={selectedYear === null ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(null)}>Все года</Button>
+                {uniqueYears.map(year => (
+                  <Button key={year} variant={selectedYear === year ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(year)}>{year}</Button>
+                ))}
+               </div>
+            </div>
           </CardHeader>
-          <CardContent className="h-[350px] w-full pl-2">
+           <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig} className="h-full w-full">
               <LineChart data={activityByDate} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />

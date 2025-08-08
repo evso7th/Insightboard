@@ -52,6 +52,7 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
       participantsWithCounts: [],
       top10Participants: [],
       totalEvents: 0,
+      uniqueYears: [],
     };
   }
   
@@ -68,15 +69,24 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
     .sort((a, b) => b.count - a.count);
   const top10Participants = participantsWithCounts.slice(0, 10);
 
+  const years = new Set<number>();
+  data.forEach(item => {
+    const date = parseDate(item['Дата']);
+    if (date) {
+      years.add(date.getUTCFullYear());
+    }
+  });
+
   return {
     participantsWithCounts,
     top10Participants,
     totalEvents: data.length,
+    uniqueYears: Array.from(years).sort((a,b) => a - b),
   };
 };
 
 // This function calculates metrics for a given dataset (which can be pre-filtered).
-export const getParticipantMetrics = (data: MessageData[]) => {
+export const getParticipantMetrics = (data: MessageData[], year: number | null) => {
   if (!data || data.length === 0) {
     return {
       totalEvents: 0,
@@ -87,9 +97,13 @@ export const getParticipantMetrics = (data: MessageData[]) => {
     };
   }
 
-  const datedData = data
+  let datedData = data
     .map(item => ({ ...item, dateObj: parseDate(item['Дата']) }))
     .filter((item): item is MessageData & { dateObj: Date } => item.dateObj !== null);
+
+  if (year) {
+    datedData = datedData.filter(item => item.dateObj.getUTCFullYear() === year);
+  }
   
   const counts = countBy(datedData, 'Тип события');
   
