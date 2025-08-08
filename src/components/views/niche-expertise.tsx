@@ -64,7 +64,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
         <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 200, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <YAxis type="category" dataKey="name" width={200} interval={0} tick={<CustomTick/>} tickLine={false} axisLine={false} />
@@ -111,5 +111,3 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-    
