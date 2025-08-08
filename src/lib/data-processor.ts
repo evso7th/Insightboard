@@ -371,7 +371,7 @@ export const getNicheExpertise = (data: MessageData[]) => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
 
-    if (nicheValue === undefined || nicheValue === null || String(nicheValue).trim() === '') {
+    if (!nicheValue || String(nicheValue).trim() === '') {
         niche = '(Не указана)';
     } else {
         niche = String(nicheValue).trim();
@@ -421,11 +421,29 @@ export const getNicheExpertise = (data: MessageData[]) => {
 };
 
 // 5. Geography and Rates
-const parseRate = (rate: any): number | null => {
-  if (rate === null || rate === undefined) return null;
-  const num = Number(String(rate).replace(/[^0-9.]/g, ''));
-  return isNaN(num) || num === 0 ? null : num;
+const parseRate = (rate: any): number[] => {
+    if (rate === null || rate === undefined) return [];
+
+    const strRate = String(rate).replace(/ /g, '');
+    const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/[^0-9]/g, ''), 10));
+    
+    const validNumbers = numbers.filter(n => !isNaN(n) && n > 0);
+
+    // Handle cases like "16002500" which might be "1600-2500" but without a separator
+    if (validNumbers.length === 1 && validNumbers[0] > 1000000) {
+      const numStr = String(validNumbers[0]);
+      if (numStr.length === 8) { // Heuristic for something like 16002500
+        const first = parseInt(numStr.substring(0, 4), 10);
+        const second = parseInt(numStr.substring(4), 10);
+        if(!isNaN(first) && !isNaN(second)) {
+            return [first, second];
+        }
+      }
+    }
+
+    return validNumbers;
 }
+
 
 export const getGeoAndRates = (data: MessageData[]) => {
   if (!data || data.length === 0) return { uniqueLocations: 0, validRatesCount: 0, averageRate: 0, geoSplit: [], rateData: [], boxPlotData: [] };
@@ -443,16 +461,16 @@ export const getGeoAndRates = (data: MessageData[]) => {
     }
 
     // Process rates
-    const rate = parseRate(item['Ставка (руб/ч)']);
-    if (rate !== null) {
-      allRates.push(rate);
+    const rates = parseRate(item['Ставка (руб/ч)']);
+    if (rates.length > 0) {
+      allRates.push(...rates);
       
       const roleList = processRoles(item['Роль']);
       roleList.forEach(role => {
           if (!rateByRole[role]) {
               rateByRole[role] = { rates: [], geos: new Set() };
           }
-          rateByRole[role].rates.push(rate);
+          rateByRole[role].rates.push(...rates);
           if (location) rateByRole[role].geos.add(String(location).trim());
       })
     }
@@ -475,6 +493,7 @@ export const getGeoAndRates = (data: MessageData[]) => {
   // Prepare rate data for table
   const rateData = Object.entries(rateByRole).map(([role, data]) => {
     const rates = data.rates;
+    if (rates.length === 0) return null;
     const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
     return {
       role,
@@ -483,7 +502,8 @@ export const getGeoAndRates = (data: MessageData[]) => {
       maxRate: Math.max(...rates),
       geo: Array.from(data.geos).join(', ') || 'N/A',
     };
-  }).sort((a,b) => b.averageRate - a.averageRate);
+  }).filter((item): item is NonNullable<typeof item> => item !== null)
+    .sort((a,b) => b.averageRate - a.averageRate);
   
   return {
     uniqueLocations: Object.keys(locationCounts).length,
@@ -522,5 +542,7 @@ export const getInvitationNetwork = (data: MessageData[]) => {
   };
 };
 
+
+    
 
     
