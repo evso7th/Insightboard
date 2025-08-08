@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Papa from 'papaparse';
 import React from 'react';
+import * as XLSX from 'xlsx';
 
 interface DataUploaderProps {
   onDataLoaded: (data: any[]) => void;
@@ -43,8 +44,24 @@ export function DataUploader({ onDataLoaded }: DataUploaderProps) {
         }
       };
       reader.readAsText(file);
+    } else if (file.name.endsWith('.xlsx')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = e.target?.result;
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+                onDataLoaded(json);
+                toast({ title: 'Success', description: 'XLSX data loaded successfully.' });
+            } catch (error: any) {
+                toast({ variant: 'destructive', title: 'Error', description: `Failed to parse XLSX: ${error.message}` });
+            }
+        };
+        reader.readAsArrayBuffer(file);
     } else {
-      toast({ variant: 'destructive', title: 'Error', description: 'Unsupported file type. Please upload a CSV or JSON file.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'Unsupported file type. Please upload a CSV, JSON or XLSX file.' });
     }
 
     // Reset file input
@@ -61,8 +78,8 @@ export function DataUploader({ onDataLoaded }: DataUploaderProps) {
           Upload Data
         </label>
       </Button>
-      <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".csv, .json" ref={fileInputRef} />
-      <p className="text-xs text-muted-foreground hidden sm:block">Upload a new CSV or JSON file.</p>
+      <Input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".csv, .json, .xlsx" ref={fileInputRef} />
+      <p className="text-xs text-muted-foreground hidden sm:block">Upload a new CSV, JSON or XLSX file.</p>
     </div>
   );
 }
