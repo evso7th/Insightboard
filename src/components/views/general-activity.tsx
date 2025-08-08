@@ -13,13 +13,6 @@ import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const formatDateForChart = (date: Date): string => {
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = String(date.getUTCFullYear()).slice(-2);
-  return `${day}.${month}.${year}`;
-};
-
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
 
@@ -33,10 +26,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     top10Participants
   } = getGeneralActivityMetrics(data, selectedParticipant);
 
-  const chartData = activityByDate.map(d => ({
-    ...d,
-    date: d.dateObj ? formatDateForChart(d.dateObj) : 'Invalid Date'
-  }));
+  const chartData = activityByDate;
 
   const aiInput = {
     dataSummary: `Total events for ${selectedParticipant || 'all users'}: ${totalEvents}, Offers: ${offers}, Demands: ${demands}. Activity trends show counts of events per day.`,

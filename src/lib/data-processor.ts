@@ -81,10 +81,14 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
   
   const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({
-      dateObj: new Date(date),
+      date: date,
       count,
     }))
-    .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .map(item => ({
+        date: new Date(item.date).toLocaleDateString('ru-RU', { year: '2-digit', month: '2-digit', day: '2-digit'}),
+        count: item.count
+    }));
 
 
   return {
