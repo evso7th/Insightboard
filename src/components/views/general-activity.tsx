@@ -35,7 +35,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
 
   const chartData = activityByDate.map(d => ({
     ...d,
-    date: d.dateObj ? formatDateForChart(d.dateObj) : d.date
+    date: d.dateObj ? formatDateForChart(d.dateObj) : 'Invalid Date'
   }));
 
   const aiInput = {

@@ -22,6 +22,7 @@ const parseDate = (dateString: string): Date | null => {
 
     let [day, month, year] = parts;
 
+    // Handle 2-digit years
     if (year < 100) {
         year += 2000;
     }
@@ -29,7 +30,7 @@ const parseDate = (dateString: string): Date | null => {
     // Month in JS Date is 0-indexed
     const date = new Date(Date.UTC(year, month - 1, day));
 
-    // Basic validation
+    // Basic validation to ensure the date is real
     if (
         date.getUTCFullYear() !== year ||
         date.getUTCMonth() !== month - 1 ||
@@ -49,11 +50,10 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
       totalEvents: 0,
       offers: 0,
       demands: 0,
-      invitations: 0,
-      participantsWithCounts: [],
-      top10Participants: [],
       activityByDate: [],
       latestEvents: [],
+      participantsWithCounts: [],
+      top10Participants: [],
     };
   }
   
@@ -74,28 +74,23 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
     .filter((item): item is MessageData & { dateObj: Date } => item.dateObj !== null);
   
   const activityByDateCounts = datedData.reduce((acc: { [key: string]: number }, item) => {
-    const dateKey = item.dateObj.toISOString().split('T')[0]; // Use YYYY-MM-DD for reliable keying
+    const dateKey = item.dateObj.toISOString().split('T')[0];
     acc[dateKey] = (acc[dateKey] || 0) + 1;
     return acc;
   }, {});
   
   const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({
-      date: new Date(date), // Create Date object from YYYY-MM-DD key
+      dateObj: new Date(date),
       count,
     }))
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
-    .map(item => ({
-        date: item.date.toLocaleDateString('ru-RU'),
-        count: item.count,
-        dateObj: item.date
-    }));
+    .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+
 
   return {
     totalEvents: filteredData.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
-    invitations: counts['приглашение'] || 0,
     participantsWithCounts,
     top10Participants,
     activityByDate,
@@ -154,7 +149,6 @@ export const getCompanyActivity = (data: MessageData[]) => {
 
   data.forEach(item => {
     const company = item['Компания'] ? String(item['Компания']).trim() : '';
-    // Filter out empty or placeholder company names
     if (company && company !== '-' && company.toLowerCase() !== 'n/a' && company.toLowerCase() !== 'na') {
       if (!companies[company]) {
         companies[company] = { offers: 0, demands: 0, roles: new Set() };
