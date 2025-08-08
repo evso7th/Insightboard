@@ -23,8 +23,17 @@ export async function processChatlogFile(): Promise<{ data?: MessageData[], erro
             const chunk = lines.slice(i, i + chunkSize).join('\n');
             if (chunk.trim() === '') continue;
 
-            const result = await extractStructuredData({ rawText: chunk });
-            allExtractedData = allExtractedData.concat(result.extractedData);
+            try {
+                const result = await extractStructuredData({ rawText: chunk });
+                 if (result && result.extractedData) {
+                    allExtractedData = allExtractedData.concat(result.extractedData);
+                }
+            } catch (chunkError: any) {
+                 console.error(`Error processing chunk starting at line ${i}:`, chunkError);
+                 // Optionally skip the chunk and continue, or fail the whole process
+                 // For now, we'll let it fail to be aware of the issue.
+                 throw new Error(`Failed to process a chunk of the log file: ${chunkError.message}`);
+            }
         }
 
         // Add sequential line numbers after all data is collected
