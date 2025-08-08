@@ -12,6 +12,8 @@ export const loadSampleData = (): MessageData[] => {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
+      worker: true,
+      escapeChar: '"',
     });
 
     if (parsed.errors.length) {
@@ -26,5 +28,3 @@ export const loadSampleData = (): MessageData[] => {
     return [];
   }
 };
-
-export const sampleData = loadSampleData();
