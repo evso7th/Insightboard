@@ -262,10 +262,10 @@ export const getCompanyActivity = (data: MessageData[]) => {
 };
 
 export const getCompanyDetail = (data: MessageData[], company: string, year: number | null) => {
-  const companyData = data.filter(d => d['Компания'] === company);
+  const allCompanyData = data.filter(d => d['Компания'] === company);
 
   const years = new Set<number>();
-  const datedData = companyData.map(item => {
+  const datedData = allCompanyData.map(item => {
     const date = parseDate(item['Дата']);
     if (date) {
       years.add(date.getUTCFullYear());
@@ -273,7 +273,7 @@ export const getCompanyDetail = (data: MessageData[], company: string, year: num
     return { ...item, dateObj: date };
   }).filter((item): item is typeof item & { dateObj: Date } => item.dateObj !== null);
 
-  const filteredData = year ? datedData.filter(item => item.dateObj?.getUTCFullYear() === year) : datedData;
+  const filteredData = year ? datedData.filter(item => item.dateObj.getUTCFullYear() === year) : datedData;
 
   const roles: { [key: string]: { offers: number; demands: number } } = {};
 
