@@ -296,7 +296,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
 
   const top20CompanyChart = [...sortedCompaniesForChart, ...sortedAuthorsForChart]
     .slice(0, 20)
-    .sort((a,b) => b.offers - a.offers);
+    .sort((a,b) => a.offers - b.offers);
 
   return {
     topOfferingCompany,
