@@ -86,10 +86,20 @@ const extractStructuredDataFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await extractorPrompt(input);
-    const output = llmResponse.output;
+    let output = llmResponse.output;
 
     if (!output) {
       throw new Error("AI failed to return structured data.");
+    }
+
+    // Handle cases where the model returns a string representation of the JSON
+    if (typeof output === 'string') {
+        try {
+            output = JSON.parse(output);
+        } catch (e) {
+            console.error("Failed to parse string output from AI:", e);
+            throw new Error("AI returned a malformed string. Could not parse as JSON.");
+        }
     }
     
     // Ensure line numbers are sequential
