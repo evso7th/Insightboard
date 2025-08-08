@@ -232,8 +232,12 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const companies: { [key: string]: { offers: number; demands: number; roles: Set<string> } } = {};
 
   data.forEach(item => {
-    const company = item['Компания'] ? String(item['Компания']).trim() : '';
-    if (company && company !== '-' && company.toLowerCase() !== 'n/a' && company.toLowerCase() !== 'na') {
+    let company = item['Компания'] ? String(item['Компания']).trim() : '';
+    if (!company || company === '-' || company.toLowerCase() === 'n/a' || company.toLowerCase() === 'na') {
+      company = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
+    }
+
+    if (company) {
       if (!companies[company]) {
         companies[company] = { offers: 0, demands: 0, roles: new Set() };
       }
@@ -269,8 +273,14 @@ export const getCompanyActivity = (data: MessageData[]) => {
   };
 };
 
-export const getCompanyDetail = (data: MessageData[], company: string, year: number | null) => {
-  const allCompanyData = data.filter(d => String(d['Компания']).trim() === company);
+export const getCompanyDetail = (data: MessageData[], companyName: string, year: number | null) => {
+  const allCompanyData = data.filter(d => {
+      let currentCompany = d['Компания'] ? String(d['Компания']).trim() : '';
+      if (!currentCompany || currentCompany === '-' || currentCompany.toLowerCase() === 'n/a' || currentCompany.toLowerCase() === 'na') {
+        currentCompany = d['Отправитель'] ? String(d['Отправитель']).trim() : '';
+      }
+      return currentCompany === companyName;
+  });
 
   const years = new Set<number>();
   const datedData = allCompanyData.map(item => {
