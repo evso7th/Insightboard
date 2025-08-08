@@ -3,7 +3,7 @@ import type { MessageData } from '@/types';
 
 // Helper to count occurrences
 const countBy = (data: any[], key: string) => {
-  return data.reduce((acc, item) => {
+  return data.reduce((acc: {[key: string]: number}, item) => {
     const value = item[key];
     if (value) {
       acc[value] = (acc[value] || 0) + 1;
@@ -18,16 +18,15 @@ const parseDate = (dateString: string): Date | null => {
     const parts = dateString.split('.');
     if (parts.length === 3) {
         let year = parseInt(parts[2], 10);
-        // Handle 2-digit years, assuming they are in the 21st century
         if (year < 100) {
             year += 2000;
         }
         const month = parseInt(parts[1], 10) - 1; // month is 0-indexed
         const day = parseInt(parts[0], 10);
         
-        const date = new Date(year, month, day);
+        const date = new Date(Date.UTC(year, month, day));
 
-        if (!isNaN(date.getTime()) && date.getFullYear() >= 2000) {
+        if (!isNaN(date.getTime()) && date.getUTCFullYear() >= 2000) {
             return date;
         }
     }
@@ -66,8 +65,7 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
   const activityByDate = Object.entries(countBy(filteredData.filter(d => d['Дата']), 'Дата'))
     .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
     .filter(item => item.dateObj !== null)
-    // @ts-ignore
-    .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
+    .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime())
     .map(({date, count, dateObj}) => ({ date, count, dateObj }));
 
 
@@ -227,7 +225,7 @@ export const getGeoAndRates = (data: MessageData[]) => {
   const totalGeo = Object.values(geoCounts).reduce((a: number, b: any) => a + b, 0);
   const rfShare = totalGeo > 0 ? ((geoCounts['РФ'] || 0) / totalGeo) * 100 : 0;
 
-  const geoSplit = Object.entries(geoCounts).map(([name, value]) => ({ name, value }));
+  const geoSplit = Object.entries(geoCounts).map(([name, value]) => ({ name, value: value as number }));
 
   const rateByRole: { [key: string]: { rates: number[], geos: Set<string> } } = {};
   data.forEach(item => {
