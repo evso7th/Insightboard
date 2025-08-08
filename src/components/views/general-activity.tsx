@@ -16,7 +16,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
 
-  const { participantsWithCounts } = useMemo(() => getGeneralActivityMetrics(data), [data]);
+  const { participantsWithCounts, top10Participants, totalEvents: allEvents } = useMemo(() => {
+    const metrics = getGeneralActivityMetrics(data);
+    const participantMetrics = getParticipantMetrics(data);
+    return { ...metrics, totalEvents: participantMetrics.totalEvents };
+  }, [data]);
   
   const {
     totalEvents,
@@ -24,19 +28,12 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     demands,
     activityByDate,
     latestEvents,
-    top10Participants,
   } = useMemo(() => {
     const filteredData = selectedParticipant
       ? data.filter(d => d['Отправитель'] === selectedParticipant)
       : data;
       
-    const participantMetrics = getParticipantMetrics(filteredData);
-    const generalMetrics = getGeneralActivityMetrics(filteredData);
-
-    return {
-      ...participantMetrics,
-      top10Participants: generalMetrics.top10Participants,
-    };
+    return getParticipantMetrics(filteredData);
   }, [data, selectedParticipant]);
   
   const aiInput = {
@@ -51,7 +48,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     },
   };
 
-  const handleParticipantChange = (value: string) => {
+  const handleParticipantChange = (value: string | null) => {
     setSelectedParticipant(value === 'all' ? null : value);
   };
   
@@ -66,7 +63,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
             <CardTitle className="text-sm font-medium">Активный участник</CardTitle>
           </CardHeader>
           <CardContent>
-            <Select onValueChange={handleParticipantChange} value={selectedParticipant || 'all'}>
+            <Select onValueChange={(value) => handleParticipantChange(value)} value={selectedParticipant || 'all'}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Выберите участника" />
               </SelectTrigger>
@@ -111,7 +108,10 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-4 md:mb-8">
         <div className="lg:col-span-1">
           <Card>
-            <CardHeader>
+            <CardHeader 
+              onClick={() => handleParticipantChange(null)}
+              className="cursor-pointer hover:bg-muted/50 rounded-t-lg"
+            >
               <CardTitle>ТОП-10 Участников</CardTitle>
             </CardHeader>
             <CardContent>
@@ -124,11 +124,18 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    <TableRow
+                        onClick={() => handleParticipantChange(null)}
+                        className={`cursor-pointer ${selectedParticipant === null ? 'bg-muted' : ''}`}
+                      >
+                        <TableCell className="font-medium">Все участники</TableCell>
+                        <TableCell className="text-right">{allEvents}</TableCell>
+                      </TableRow>
                     {top10Participants.map((p) => (
                       <TableRow 
                         key={p.name}
                         onClick={() => handleParticipantChange(p.name)}
-                        className={`cursor-pointer ${selectedParticipant === p.name ? 'bg-muted/50' : ''}`}
+                        className={`cursor-pointer ${selectedParticipant === p.name ? 'bg-muted' : ''}`}
                       >
                         <TableCell className="font-medium">{p.name}</TableCell>
                         <TableCell className="text-right">{p.count}</TableCell>
