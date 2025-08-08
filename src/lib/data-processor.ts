@@ -371,10 +371,10 @@ export const getNicheExpertise = (data: MessageData[]) => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
 
-    if (!nicheValue || String(nicheValue).trim() === '') {
+    if (!nicheValue || typeof nicheValue !== 'string' || nicheValue.trim() === '') {
         niche = '(Не указана)';
     } else {
-        niche = String(nicheValue).trim();
+        niche = nicheValue.trim();
     }
       
     if (!niches[niche]) {

@@ -66,7 +66,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                 <YAxis type="category" dataKey="name" width={200} interval={0} tick={<CustomTick/>} tickLine={false} axisLine={false} />
                 <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                 <Bar dataKey="mentions" fill="hsl(var(--primary))" name="Упоминания" radius={[0, 4, 4, 0]}>
