@@ -137,7 +137,7 @@ export const getParticipantMetrics = (data: MessageData[], year: number | null) 
 
 const processRoles = (roleString: string): string[] => {
     if (!roleString) return [];
-    return roleString.split(/[,/]/).map(r => r.trim()).filter(r => r && r.length > 0);
+    return String(roleString).split(/[,/]/).map(r => r.trim()).filter(r => r && r.length > 0);
 };
 
 // 2. Demand vs. Supply by Roles
@@ -244,12 +244,19 @@ export const getCompanyActivity = (data: MessageData[]) => {
       if (!companies[companyName]) {
         companies[companyName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthorReplacement };
       }
+      
+      // If a real company name appeared later for an author, mark it as not an author replacement.
+      if (companies[companyName].isAuthor && !isAuthorReplacement) {
+          companies[companyName].isAuthor = false;
+      }
+      
       const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
       if (eventType === 'предложение') {
         companies[companyName].offers++;
       } else if (eventType === 'спрос') {
         companies[companyName].demands++;
       }
+      
       const roleList = processRoles(item['Роль']);
       roleList.forEach(role => {
         if(role) companies[companyName].roles.add(role)
@@ -463,3 +470,4 @@ export const getInvitationNetwork = (data: MessageData[]) => {
   };
 };
 
+    

@@ -212,3 +212,5 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    
