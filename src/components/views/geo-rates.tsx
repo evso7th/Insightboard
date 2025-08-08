@@ -1,33 +1,16 @@
 
 'use client';
-import { Globe, RussianRuble, BarChart, PieChartIcon } from "lucide-react";
+import { Globe, RussianRuble, BarChart as BarChartIcon, PieChartIcon } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeoAndRates } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Pie, PieChart, Tooltip, Cell, Legend, ResponsiveContainer, Bar, BarChart as ReBarChart, CartesianGrid, XAxis, YAxis, LabelList } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-
-const CustomPieLabel = (props: any) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name } = props;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-    
-    if (percent < 0.05) return null; // Don't render label for small slices
-
-    return (
-        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} className="pointer-events-none">
-            <tspan x={x} dy="-0.5em">{name}</tspan>
-            <tspan x={x} dy="1.2em">{`${(percent * 100).toFixed(0)}%`}</tspan>
-        </text>
-    );
-};
 
 export function GeoRatesView({ data }: { data: MessageData[] }) {
   const { uniqueLocations, validRatesCount, averageRate, geoSplit, rateData, boxPlotData } = getGeoAndRates(data);
@@ -42,18 +25,19 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
       label: "Сред. ставка",
       color: "hsl(var(--chart-2))",
     },
+    locations: {
+      label: "Локации",
+      color: "hsl(var(--chart-1))"
+    }
   };
   
-  const geoConfig = geoSplit.reduce((acc, entry) => {
-    acc[entry.name] = { label: entry.name };
-    return acc;
-  }, {} as any);
+  const geoChartData = geoSplit.sort((a, b) => a.value - b.value);
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
         <KpiCard title="Кол-во уникальных локаций" value={uniqueLocations} icon={Globe} />
-        <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChart} />
+        <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChartIcon} />
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
       </div>
       
@@ -63,23 +47,23 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
           <CardDescription>Топ-5 локаций, остальные сгруппированы в "Другие"</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px] w-full flex items-center justify-center pl-2">
-          {geoSplit && geoSplit.length > 0 ? (
-            <ChartContainer config={geoConfig}>
+          {geoChartData && geoChartData.length > 0 ? (
+            <ChartContainer config={chartConfig}>
               <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip content={<ChartTooltipContent />} />
-                    <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={<CustomPieLabel/>}>
-                      {geoSplit.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Legend wrapperStyle={{fontSize: "12px"}}/>
-                  </PieChart>
+                  <BarChart data={geoChartData} layout="vertical" margin={{ left: 100 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} width={100} interval={0}/>
+                    <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                    <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                    <Bar dataKey="value" name="Упоминания" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]}>
+                      <LabelList dataKey="value" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
+                    </Bar>
+                  </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           ) : (
             <div className="text-center text-muted-foreground">
-              <PieChartIcon className="mx-auto h-12 w-12 mb-4" />
+              <BarChartIcon className="mx-auto h-12 w-12 mb-4" />
               <p>Нет данных для отображения диаграммы.</p>
             </div>
           )}
@@ -93,16 +77,15 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
         <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
-                    <ReBarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 70 }}>
+                    <BarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 70 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
                         <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={['dataMin - 1000', 'auto']} />
                         <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
-                        <Legend wrapperStyle={{fontSize: "12px"}} />
                         <Bar dataKey="averageRate" fill="hsl(var(--chart-2))" name="Сред. ставка" radius={[4, 4, 0, 0]}>
                             <LabelList dataKey="averageRate" position="top" offset={5} fontSize={10} fill="hsl(var(--foreground))" formatter={(value: number) => value.toLocaleString()} />
                         </Bar>
-                    </ReBarChart>
+                    </BarChart>
                 </ResponsiveContainer>
             </ChartContainer>
         </CardContent>
