@@ -99,7 +99,8 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
       
-      {/* Tables Container */}
+      {/*
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <div className="lg:col-span-1">
           <Card>
@@ -161,10 +162,11 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </div>
       </div>
 
-      {/* AI Insight Container */}
+      
       <div>
         <AIInsight input={aiInput} />
       </div>
+      */}
     </div>
   );
 }
