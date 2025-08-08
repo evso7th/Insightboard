@@ -11,7 +11,7 @@ export const loadSampleData = (): MessageData[] => {
     const parsed = Papa.parse<MessageData>(csvFile, {
       header: true,
       dynamicTyping: true,
-      skipEmptyLines: 'greedy',
+      skipEmptyLines: true,
       transformHeader: header => header.trim(),
     });
 
