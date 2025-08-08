@@ -1,3 +1,4 @@
+
 import type { MessageData } from '@/types';
 
 // Helper to count occurrences
@@ -54,14 +55,15 @@ export const getDemandSupplyByRole = (data: MessageData[]) => {
       if (!roles[role]) {
         roles[role] = { demand: 0, supply: 0 };
       }
-      if (item['Тип события'] === 'спрос') {
+      const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+      if (eventType === 'спрос') {
         roles[role].demand++;
-      } else if (item['Тип события'] === 'предложение') {
+      } else if (eventType === 'предложение') {
         roles[role].supply++;
       }
     }
   });
-
+  
   const roleData = Object.entries(roles).map(([role, { demand, supply }]) => ({
     role,
     demand,
