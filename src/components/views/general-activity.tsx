@@ -22,6 +22,8 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     demands,
     activityByDate,
     participantsWithCounts,
+    top10Participants,
+    latestEvents
   } = getGeneralActivityMetrics(data, selectedParticipant);
 
   const chartData = activityByDate;
@@ -95,8 +97,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </CardContent>
       </Card>
       
-      {/*
-      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <div className="lg:col-span-1">
           <Card>
@@ -162,7 +162,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       <div>
         <AIInsight input={aiInput} />
       </div>
-      */}
     </div>
   );
 }
