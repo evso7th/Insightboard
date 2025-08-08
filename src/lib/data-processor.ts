@@ -422,9 +422,9 @@ const parseRate = (rate: any): number[] => {
     
     const strRate = String(rate).replace(/ /g, '').toLowerCase();
 
-    // Ignore non-numeric values
     if (!/\d/.test(strRate)) return [];
 
+    // Handles ranges like 1600-2500, 1600/2500, etc.
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
     const validNumbers = numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
@@ -438,7 +438,7 @@ export const getGeoAndRates = (data: MessageData[]) => {
 
   const allRates: number[] = [];
   const locationCounts: { [key: string]: number } = {};
-  const rateByRole: { [key: string]: { rates: number[], geos: Set<string> } } = {};
+  const rateByRole: { [key:string]: { rates: number[], geos: Set<string> } } = {};
 
   data.forEach(item => {
     // Process geography
