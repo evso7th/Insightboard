@@ -190,7 +190,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <Card className="lg:col-span-2">
             <CardHeader>
             <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>

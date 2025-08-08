@@ -11,7 +11,6 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContaine
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
-
 export function RatesView({ data }: { data: MessageData[] }) {
   const { validRatesCount, averageRate, rateData, boxPlotData } = getGeoAndRates(data);
 
@@ -34,7 +33,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
       </div>
       
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
          <Card>
             <CardHeader>
             <CardTitle>Средние ставки по ролям (ТОП-10)</CardTitle>

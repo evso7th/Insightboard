@@ -60,7 +60,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
         <KpiCard title="Экспертиз с высокой срочностью" value={urgentExpertise} icon={Zap} />
       </div>
       
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <Card className="lg:col-span-2">
             <CardHeader>
             <CardTitle>Топ-15 ниш по количеству упоминаний</CardTitle>
