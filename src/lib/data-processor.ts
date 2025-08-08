@@ -288,12 +288,10 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const topOfferingAuthor = [...authorsAsCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingAuthor = [...authorsAsCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
   
-  const sortedCompaniesForChart = allParticipants
-    .filter(p => !p.isAuthor)
+  const sortedCompaniesForChart = realCompanies
     .sort((a, b) => b.offers - a.offers);
 
-  const sortedAuthorsForChart = allParticipants
-    .filter(p => p.isAuthor)
+  const sortedAuthorsForChart = authorsAsCompanies
     .sort((a, b) => b.offers - a.offers);
 
   const top20CompanyChart = [...sortedCompaniesForChart, ...sortedAuthorsForChart]
@@ -370,9 +368,13 @@ export const getNicheExpertise = (data: MessageData[]) => {
   
   data.forEach(item => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
-    const niche = (nicheValue && typeof nicheValue === 'string' && nicheValue.trim()) 
-      ? nicheValue.trim() 
-      : '(Не указана)';
+    let niche: string;
+
+    if (!nicheValue || typeof nicheValue !== 'string' || !nicheValue.trim()) {
+      niche = '(Не указана)';
+    } else {
+      niche = nicheValue.trim();
+    }
       
     if (!niches[niche]) {
       niches[niche] = { count: 0, companies: new Set(), contexts: [], urgent: 0 };
