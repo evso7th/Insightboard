@@ -16,7 +16,7 @@ const countBy = (data: any[], key: string) => {
 const parseDate = (dateString: string): Date | null => {
     if (!dateString || typeof dateString !== 'string') return null;
     const parts = dateString.split('.').map(part => parseInt(part, 10));
-    if (parts.length !== 3 || parts.some(isNaN)) {
+    if (parts.length < 3 || parts.some(isNaN)) { // allow more than 3 parts but require at least 3
         return null;
     }
 
@@ -44,14 +44,10 @@ const parseDate = (dateString: string): Date | null => {
 
 
 // 1. General Activity
-export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipant: string | null = null) => {
+// This function calculates metrics that do not depend on the participant filter.
+export const getGeneralActivityMetrics = (data: MessageData[]) => {
   if (!data || data.length === 0) {
     return {
-      totalEvents: 0,
-      offers: 0,
-      demands: 0,
-      activityByDate: [],
-      latestEvents: [],
       participantsWithCounts: [],
       top10Participants: [],
     };
@@ -63,13 +59,27 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
     .sort((a, b) => b.count - a.count);
   const top10Participants = participantsWithCounts.slice(0, 10);
 
-  const filteredData = selectedParticipant 
-    ? data.filter(d => d['Отправитель'] === selectedParticipant)
-    : data;
+  return {
+    participantsWithCounts,
+    top10Participants,
+  };
+};
+
+// This function calculates metrics for a given dataset (which can be pre-filtered).
+export const getParticipantMetrics = (data: MessageData[]) => {
+  if (!data || data.length === 0) {
+    return {
+      totalEvents: 0,
+      offers: 0,
+      demands: 0,
+      activityByDate: [],
+      latestEvents: [],
+    };
+  }
+
+  const counts = countBy(data, 'Тип события');
   
-  const counts = countBy(filteredData, 'Тип события');
-  
-  const datedData = filteredData
+  const datedData = data
     .map(item => ({ ...item, dateObj: parseDate(item['Дата']) }))
     .filter((item): item is MessageData & { dateObj: Date } => item.dateObj !== null);
   
@@ -81,22 +91,19 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
   
   const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({
-      date: date,
+      date: new Date(date).toLocaleDateString('ru-RU', { year: '2-digit', month: '2-digit', day: '2-digit'}),
       count,
     }))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .map(item => ({
-        date: new Date(item.date).toLocaleDateString('ru-RU', { year: '2-digit', month: '2-digit', day: '2-digit'}),
-        count: item.count
-    }));
-
+    .sort((a, b) => {
+        const dateA = a.date.split('.').reverse().join('-');
+        const dateB = b.date.split('.').reverse().join('-');
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
+    });
 
   return {
-    totalEvents: filteredData.length,
+    totalEvents: data.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
-    participantsWithCounts,
-    top10Participants,
     activityByDate,
     latestEvents: datedData
       .sort((a, b) => b.dateObj!.getTime() - a.dateObj!.getTime())

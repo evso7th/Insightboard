@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BarChart, Briefcase, Users } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
-import { getGeneralActivityMetrics } from "@/lib/data-processor";
+import { getGeneralActivityMetrics, getParticipantMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
@@ -16,23 +16,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
 
+  // Calculate metrics that don't depend on selection
+  const { participantsWithCounts, top10Participants: initialTop10 } = getGeneralActivityMetrics(data);
+
+  // Filter data based on selection
+  const filteredData = selectedParticipant
+    ? data.filter(d => d['Отправитель'] === selectedParticipant)
+    : data;
+  
+  // Calculate metrics based on filtered data
   const {
     totalEvents,
     offers,
     demands,
     activityByDate,
-    participantsWithCounts,
-    top10Participants,
     latestEvents
-  } = getGeneralActivityMetrics(data, selectedParticipant);
-
+  } = getParticipantMetrics(filteredData);
+  
   const chartData = activityByDate;
 
   const aiInput = {
-    dataSummary: `Total events for ${selectedParticipant || 'all users'}: ${totalEvents}, Offers: ${offers}, Demands: ${demands}. Activity trends show counts of events per day.`,
-    viewDescription: `This is a high-level overview of activities for ${selectedParticipant || 'all users'}. It shows total counts of different event types and visualizes the timeline of events.`
+    dataSummary: `Статистика для ${selectedParticipant || 'всех участников'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
+    viewDescription: `Это общая сводка по активности для ${selectedParticipant || 'всех участников'}. Здесь показаны общие количества различных типов событий и визуализирована динамика активности по времени.`
   };
-
+  
   const chartConfig = {
     count: {
       label: "События",
@@ -43,6 +50,8 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const handleParticipantChange = (value: string) => {
     setSelectedParticipant(value === 'all' ? null : value);
   };
+  
+  const top10ToDisplay = selectedParticipant ? getGeneralActivityMetrics(filteredData).top10Participants : initialTop10;
 
   return (
     <div className="flex flex-col gap-4 md:gap-8">
@@ -77,7 +86,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       </div>
       
       {/* Chart Container */}
-      <Card>
+       <Card>
         <CardHeader>
           <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
         </CardHeader>
@@ -97,6 +106,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </CardContent>
       </Card>
       
+      {/* Tables and AI Insight */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <div className="lg:col-span-1">
           <Card>
@@ -113,7 +123,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {top10Participants.map((p) => (
+                    {top10ToDisplay.map((p) => (
                       <TableRow key={p.name}>
                         <TableCell className="font-medium">{p.name}</TableCell>
                         <TableCell className="text-right">{p.count}</TableCell>
@@ -157,7 +167,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
           </Card>
         </div>
       </div>
-
       
       <div>
         <AIInsight input={aiInput} />
