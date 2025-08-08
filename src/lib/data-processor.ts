@@ -15,22 +15,30 @@ const countBy = (data: any[], key: string) => {
 // Helper to parse DD.MM.YYYY or DD.MM.YY date strings
 const parseDate = (dateString: string): Date | null => {
     if (!dateString || typeof dateString !== 'string') return null;
-    const parts = dateString.split('.');
-    if (parts.length === 3) {
-        let year = parseInt(parts[2], 10);
-        if (year < 100) {
-            year += 2000;
-        }
-        const month = parseInt(parts[1], 10) - 1; // month is 0-indexed
-        const day = parseInt(parts[0], 10);
-        
-        const date = new Date(Date.UTC(year, month, day));
-
-        if (!isNaN(date.getTime()) && date.getUTCFullYear() >= 2000 && date.getUTCFullYear() < 2030) {
-            return date;
-        }
+    const parts = dateString.split('.').map(part => parseInt(part, 10));
+    if (parts.length !== 3 || parts.some(isNaN)) {
+        return null;
     }
-    return null;
+
+    let [day, month, year] = parts;
+
+    if (year < 100) {
+        year += 2000;
+    }
+    
+    // Month in JS Date is 0-indexed
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    // Basic validation
+    if (
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day
+    ) {
+        return null;
+    }
+    
+    return date;
 };
 
 
@@ -48,7 +56,7 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
       latestEvents: [],
     };
   }
-
+  
   const participantActivity = countBy(data, 'Отправитель');
   const participantsWithCounts = Object.entries(participantActivity)
     .map(([name, count]) => ({ name, count: count as number }))
@@ -58,30 +66,30 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
   const filteredData = selectedParticipant 
     ? data.filter(d => d['Отправитель'] === selectedParticipant)
     : data;
-
+  
   const counts = countBy(filteredData, 'Тип события');
-
-  // Convert date strings to Date objects and filter invalid ones
+  
   const datedData = filteredData
     .map(item => ({ ...item, dateObj: parseDate(item['Дата']) }))
-    .filter(item => item.dateObj !== null);
-
+    .filter((item): item is MessageData & { dateObj: Date } => item.dateObj !== null);
+  
   const activityByDateCounts = datedData.reduce((acc: { [key: string]: number }, item) => {
-    // Use toLocaleDateString to get a consistent key like "DD.MM.YYYY"
-    const dateKey = item.dateObj!.toLocaleDateString('ru-RU');
+    const dateKey = item.dateObj.toISOString().split('T')[0]; // Use YYYY-MM-DD for reliable keying
     acc[dateKey] = (acc[dateKey] || 0) + 1;
     return acc;
   }, {});
-
+  
   const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({
-      date,
+      date: new Date(date), // Create Date object from YYYY-MM-DD key
       count,
-      dateObj: parseDate(date),
     }))
-    .filter(item => item.dateObj !== null) // Ensure date is valid after re-parsing
-    .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime());
-
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map(item => ({
+        date: item.date.toLocaleDateString('ru-RU'),
+        count: item.count,
+        dateObj: item.date
+    }));
 
   return {
     totalEvents: filteredData.length,
@@ -96,6 +104,7 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
       .slice(0, 20),
   };
 };
+
 
 // 2. Demand vs. Supply by Roles
 export const getDemandSupplyByRole = (data: MessageData[]) => {
