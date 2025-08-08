@@ -27,7 +27,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
   };
   
   return (
-    <div className="flex flex-col gap-4 md:gap-8">
+    <div className="grid gap-4 md:gap-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChartIcon} />
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
