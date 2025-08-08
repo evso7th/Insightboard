@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { MessageData } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataUploader } from './data-uploader';
@@ -10,10 +10,13 @@ import { CompanyActivityView } from './views/company-activity';
 import { NicheExpertiseView } from './views/niche-expertise';
 import { GeoRatesView } from './views/geo-rates';
 import { InvitationNetworkView } from './views/invitation-network';
-import { sampleData } from '@/lib/data';
 
-export default function Dashboard() {
-  const [data, setData] = useState<MessageData[]>(sampleData);
+interface DashboardProps {
+  initialData: MessageData[];
+}
+
+export default function Dashboard({ initialData }: DashboardProps) {
+  const [data, setData] = useState<MessageData[]>(initialData);
 
   const handleDataLoaded = (newData: any[]) => {
     // Basic validation, can be improved
