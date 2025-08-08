@@ -261,6 +261,50 @@ export const getCompanyActivity = (data: MessageData[]) => {
   };
 };
 
+export const getCompanyDetail = (data: MessageData[], company: string, year: number | null) => {
+  const companyData = data.filter(d => d['Компания'] === company);
+
+  const years = new Set<number>();
+  const datedData = companyData.map(item => {
+    const date = parseDate(item['Дата']);
+    if (date) {
+      years.add(date.getUTCFullYear());
+    }
+    return { ...item, dateObj: date };
+  }).filter(item => item.dateObj !== null);
+
+  const filteredData = year ? datedData.filter(item => item.dateObj?.getUTCFullYear() === year) : datedData;
+
+  const roles: { [key: string]: { offers: number; demands: number } } = {};
+
+  filteredData.forEach(item => {
+    const role = item['Роль'];
+    if (role) {
+      if (!roles[role]) {
+        roles[role] = { offers: 0, demands: 0 };
+      }
+      const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+      if (eventType === 'предложение') {
+        roles[role].offers++;
+      } else if (eventType === 'спрос') {
+        roles[role].demands++;
+      }
+    }
+  });
+
+  const companyDetails = Object.entries(roles).map(([role, { offers, demands }]) => ({
+    role,
+    offers,
+    demands
+  })).sort((a, b) => (b.offers + b.demands) - (a.offers + a.demands));
+
+  return {
+    companyDetails,
+    uniqueYearsInCompany: Array.from(years).sort((a, b) => a - b)
+  };
+};
+
+
 // 4. Niche Expertise
 export const getNicheExpertise = (data: MessageData[]) => {
    if (!data || data.length === 0) return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [], heatmapData: [] };
