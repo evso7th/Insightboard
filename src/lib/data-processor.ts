@@ -90,8 +90,9 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const companies: { [key: string]: { offers: number; demands: number; roles: Set<string> } } = {};
 
   data.forEach(item => {
-    const company = item['Компания'];
-    if (company) {
+    const company = item['Компания'] ? String(item['Компания']).trim() : '';
+    // Filter out empty or placeholder company names
+    if (company && company !== '-') {
       if (!companies[company]) {
         companies[company] = { offers: 0, demands: 0, roles: new Set() };
       }
@@ -247,3 +248,6 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
+
+    

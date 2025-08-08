@@ -10,6 +10,36 @@ import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
+import { Text } from 'recharts';
+
+// Custom tick for Y-axis to wrap long labels
+const CustomTick = (props: any) => {
+  const { x, y, payload } = props;
+  const label = payload.value;
+  // Simple wrapping logic, adjust as needed
+  const words = label.split(' ');
+  const lines = [] as string[];
+  let currentLine = '';
+  words.forEach((word: string) => {
+    if ((currentLine + word).length < 20) {
+      currentLine += ` ${word}`;
+    } else {
+      lines.push(currentLine.trim());
+      currentLine = word;
+    }
+  });
+  lines.push(currentLine.trim());
+
+  return (
+     <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={10}>
+        {lines.map((line, index) => (
+          <tspan x={0} dy={index === 0 ? 0 : 12} key={index}>{line}</tspan>
+        ))}
+      </text>
+    </g>
+  );
+};
 
 export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top10CompanyChart } = getCompanyActivity(data);
@@ -43,7 +73,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
             <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-              <YAxis type="category" dataKey="name" width={100} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick />} tickLine={false} axisLine={false} />
               <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
               <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[0, 4, 4, 0]}>
                  <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
@@ -88,3 +118,5 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    
