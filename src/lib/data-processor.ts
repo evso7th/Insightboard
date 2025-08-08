@@ -36,24 +36,34 @@ const parseDate = (dateString: string): Date | null => {
 
 
 // 1. General Activity
-export const getGeneralActivityMetrics = (data: MessageData[]) => {
+export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipant: string | null = null) => {
   if (!data || data.length === 0) {
     return {
       totalEvents: 0,
       offers: 0,
       demands: 0,
       invitations: 0,
-      topParticipant: 'N/A',
+      participantsWithCounts: [],
+      top10Participants: [],
       activityByDate: [],
       latestEvents: [],
     };
   }
-
-  const counts = countBy(data, 'Тип события');
-  const participantActivity = countBy(data, 'Отправитель');
-  const topParticipant = Object.keys(participantActivity).reduce((a, b) => participantActivity[a] > participantActivity[b] ? a : b, 'N/A');
   
-  const activityByDate = Object.entries(countBy(data.filter(d => d['Дата']), 'Дата'))
+  const participantActivity = countBy(data, 'Отправитель');
+  const participantsWithCounts = Object.entries(participantActivity)
+    .map(([name, count]) => ({ name, count: count as number }))
+    .sort((a, b) => b.count - a.count);
+  
+  const top10Participants = participantsWithCounts.slice(0, 10);
+
+  const filteredData = selectedParticipant 
+    ? data.filter(d => d['Отправитель'] === selectedParticipant)
+    : data;
+
+  const counts = countBy(filteredData, 'Тип события');
+  
+  const activityByDate = Object.entries(countBy(filteredData.filter(d => d['Дата']), 'Дата'))
     .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
     .filter(item => item.dateObj !== null)
     // @ts-ignore
@@ -62,13 +72,14 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
 
 
   return {
-    totalEvents: data.length,
+    totalEvents: filteredData.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
     invitations: counts['приглашение'] || 0,
-    topParticipant,
+    participantsWithCounts,
+    top10Participants,
     activityByDate,
-    latestEvents: data.slice(-20).reverse(),
+    latestEvents: filteredData.slice(-20).reverse(),
   };
 };
 
