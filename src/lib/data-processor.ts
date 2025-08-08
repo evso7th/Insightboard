@@ -492,21 +492,26 @@ export const getGeoAndRates = (data: MessageData[]) => {
 export const getInvitationNetwork = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
   
-  const invitations = data.filter(item => item['Тип события'] === 'приглашение' && item['Связь (from → to)']);
+  // Look for connections in all rows, not just ones with event type 'invitation'
+  const invitations = data.filter(item => item['Связь (from → to)']);
 
-  const invitationLinks = invitations.map(item => {
-    const fromTo = String(item['Связь (from → to)']);
-    const [from, to] = fromTo.includes('->') ? fromTo.split('->').map(s => s.trim()) : [fromTo, ''];
-    return { from, to, date: item['Дата'] };
-  });
+  const invitationLinks = invitations
+    .map(item => {
+        const fromTo = String(item['Связь (from → to)']);
+        const [from, to] = fromTo.includes('->') ? fromTo.split('->').map(s => s.trim()) : [fromTo, ''];
+        return { from, to, date: item['Дата'] };
+    })
+    .filter(link => link.from && link.to); // Ensure both from and to are present
 
   if (invitationLinks.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
 
   const inviterCounts = countBy(invitationLinks, 'from');
-  const topInviter = Object.keys(inviterCounts).reduce((a, b) => inviterCounts[a] > inviterCounts[b] ? a : b, 'N/A');
+  const topInviter = Object.keys(inviterCounts).length > 0
+    ? Object.keys(inviterCounts).reduce((a, b) => inviterCounts[a] > inviterCounts[b] ? a : b, 'N/A')
+    : 'N/A';
 
   const totalParticipants = new Set(data.map(d => d['Отправитель'])).size;
-  const averageInvitations = totalParticipants > 0 ? invitations.length / totalParticipants : 0;
+  const averageInvitations = totalParticipants > 0 ? invitationLinks.length / totalParticipants : 0;
   
   const topInvitersChartData = Object.entries(inviterCounts)
     .map(([name, count]) => ({ name, count }))
@@ -516,7 +521,7 @@ export const getInvitationNetwork = (data: MessageData[]) => {
 
   return {
     topInviter,
-    totalInvitations: invitations.length,
+    totalInvitations: invitationLinks.length,
     averageInvitations,
     networkData: invitationLinks.filter(l => l.from && l.to),
     topInvitersChartData
