@@ -17,25 +17,23 @@ export async function processChatlogFile(): Promise<{ data?: MessageData[], erro
 
         const lines = fileContent.data.split('\n');
         const chunkSize = 200; // Process 200 lines at a time
-        let allExtractedData: MessageData[] = [];
-        let totalProcessedCount = 0;
+        let allExtractedData: Omit<MessageData, '№ стр.'>[] = [];
 
         for (let i = 0; i < lines.length; i += chunkSize) {
             const chunk = lines.slice(i, i + chunkSize).join('\n');
             if (chunk.trim() === '') continue;
 
             const result = await extractStructuredData({ rawText: chunk });
-            
-            // Add the new data and re-calculate line numbers
-            const processedDataWithCorrectedLineNumbers = result.extractedData.map((item: any) => {
-                const newItem = { ...item, '№ стр.': totalProcessedCount + 1 };
-                totalProcessedCount++;
-                return newItem;
-            });
-            allExtractedData = allExtractedData.concat(processedDataWithCorrectedLineNumbers);
+            allExtractedData = allExtractedData.concat(result.extractedData);
         }
 
-        return { data: allExtractedData };
+        // Add sequential line numbers after all data is collected
+        const dataWithLineNumbers = allExtractedData.map((item, index) => ({
+            ...item,
+            '№ стр.': index + 1,
+        }));
+
+        return { data: dataWithLineNumbers };
 
     } catch (error: any) {
         console.error("Error in processChatlogFile action:", error);

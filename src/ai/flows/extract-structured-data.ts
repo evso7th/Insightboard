@@ -13,7 +13,6 @@ import { z } from 'zod';
 
 // Zod schema based on the MessageData type from src/types/index.ts
 const MessageDataSchema = z.object({
-  '№ стр.': z.number().describe('Line number, just use index of creation'),
   'Дата': z.string().describe('Date in DD.MM.YYYY format'),
   'Время': z.string().describe('Time in HH:MM:SS format'),
   'Отправитель': z.string().describe('Sender\'s name'),
@@ -56,7 +55,6 @@ Analyze the entire provided text. Identify every message that appears to be a jo
 For each such message, extract the relevant information and create a JSON object that conforms to the provided output schema.
 
 Here are detailed instructions for each field:
-- '№ стр.': Use the index of the object you are creating in the array, starting from 1.
 - 'Дата': Extract the date of the message. The date might be at the top of a block of messages.
 - 'Время': Extract the timestamp of the message.
 - 'Отправитель': Extract the name of the person who sent the message.
@@ -94,7 +92,6 @@ const extractStructuredDataFlow = ai.defineFlow(
 
     if (typeof output === 'string') {
         try {
-            // Clean the string before parsing
             const cleanedString = output.replace(/^```json\s*|```\s*$/g, '');
             output = JSON.parse(cleanedString);
         } catch (e) {
@@ -103,18 +100,11 @@ const extractStructuredDataFlow = ai.defineFlow(
         }
     }
     
-    // Ensure the output has the expected structure
     if (!output || !Array.isArray(output.extractedData)) {
       console.error("Parsed output is not in the expected format:", output);
       throw new Error("AI output format is incorrect after parsing.");
     }
     
-    // Ensure line numbers are sequential
-    const dataWithSequentialLineNumbers = output.extractedData.map((item, index) => ({
-      ...item,
-      '№ стр.': index + 1,
-    }));
-    
-    return { extractedData: dataWithSequentialLineNumbers };
+    return { extractedData: output.extractedData };
   }
 );
