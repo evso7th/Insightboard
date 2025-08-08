@@ -15,12 +15,13 @@ import { ScrollArea } from "../ui/scroll-area";
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
   const label = payload.value;
+  const truncatedLabel = label.length > 25 ? `${label.substring(0, 23)}...` : label;
   
   return (
      <g transform={`translate(${x},${y})`}>
       <title>{label}</title>
       <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12}>
-        {label}
+        {truncatedLabel}
       </text>
     </g>
   );
