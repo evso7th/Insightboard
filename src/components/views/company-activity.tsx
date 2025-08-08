@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { Building, Users, Briefcase, ArrowLeft } from "lucide-react";
+import { Building, Users, Briefcase, ArrowLeft, User, UserCheck } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getCompanyActivity, getCompanyDetail } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
@@ -14,13 +14,17 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Button } from '../ui/button';
 
 const CustomTick = (props: any) => {
-  const { x, y, payload } = props;
+  const { x, y, payload, data } = props;
+  const item = data.find((d: any) => d.name === payload.value);
+  const isCompany = item && !item.isAuthor;
+
   const label = payload.value;
   const truncatedLabel = label.length > 20 ? `${label.substring(0, 18)}...` : label;
+  
   return (
      <g transform={`translate(${x},${y})`}>
       <title>{label}</title>
-      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12}>
+      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12} fontWeight={isCompany ? 'bold' : 'normal'}>
         {truncatedLabel}
       </text>
     </g>
@@ -46,7 +50,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top20CompanyChart } = useMemo(() => {
+  const { topOfferingCompany, topDemandingCompany, topOfferingAuthor, topDemandingAuthor, totalMentions, companyData, top20CompanyChart } = useMemo(() => {
     return getCompanyActivity(data);
   }, [data]);
 
@@ -90,7 +94,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle>Детализация по компании: {selectedParticipant}</CardTitle>
+                <CardTitle>Детализация по участнику: {selectedParticipant}</CardTitle>
                 <CardDescription>Спрос и предложение по ролям за {selectedYear || 'все время'}</CardDescription>
               </div>
                <div className="flex items-center gap-2 flex-wrap">
@@ -103,7 +107,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-5">
             <div className="h-[400px] w-full md:col-span-3">
-              <ChartContainer config={chartConfig} className="h-full w-full">
+              <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -148,9 +152,11 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-      <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
-        <KpiCard title="Топ-1 компания по предложениям" value={topOfferingCompany} icon={Briefcase} />
-        <KpiCard title="Топ-1 компания по спросу" value={topDemandingCompany} icon={Users} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 xl:col-span-3">
+        <KpiCard title="Топ-1 компания (предл.)" value={topOfferingCompany} icon={Briefcase} />
+        <KpiCard title="Топ-1 автор (предл.)" value={topOfferingAuthor} icon={User} />
+        <KpiCard title="Топ-1 компания (спрос)" value={topDemandingCompany} icon={Users} />
+        <KpiCard title="Топ-1 автор (спрос)" value={topDemandingAuthor} icon={UserCheck} />
         <KpiCard title="Общее число упоминаний" value={totalMentions} icon={Building} />
       </div>
       
@@ -160,12 +166,12 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           <CardDescription>Нажмите на столбец для детализации</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
-          <ChartContainer config={chartConfig} className="h-full w-full">
+          <ChartContainer config={chartConfig}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick />} tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick data={top20CompanyChart} />} tickLine={false} axisLine={false} />
                 <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                 <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[0, 4, 4, 0]} className="cursor-pointer">
                    <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
@@ -212,5 +218,3 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-    

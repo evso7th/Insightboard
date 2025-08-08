@@ -226,7 +226,7 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 
 // 3. Activity by Companies
 export const getCompanyActivity = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
+  if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
   
   const companies: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
 
@@ -281,6 +281,9 @@ export const getCompanyActivity = (data: MessageData[]) => {
   
   const topOfferingCompany = [...realCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingCompany = [...realCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
+  
+  const topOfferingAuthor = [...authorsAsCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
+  const topDemandingAuthor = [...authorsAsCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
 
   const chartCompanies = allParticipants.filter(p => !p.isAuthor).sort((a,b) => b.offers - a.offers);
   const chartAuthors = allParticipants.filter(p => p.isAuthor).sort((a,b) => b.offers - a.offers);
@@ -288,6 +291,8 @@ export const getCompanyActivity = (data: MessageData[]) => {
   return {
     topOfferingCompany,
     topDemandingCompany,
+    topOfferingAuthor,
+    topDemandingAuthor,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
     top20CompanyChart: [...chartCompanies, ...chartAuthors].slice(0, 20),
@@ -474,5 +479,3 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
-
-    
