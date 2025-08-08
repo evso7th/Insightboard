@@ -14,9 +14,8 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Button } from '../ui/button';
 
 const CustomTick = (props: any) => {
-  const { x, y, payload, width } = props;
+  const { x, y, payload } = props;
   const label = payload.value;
-  // A simple heuristic to truncate long labels, can be improved
   const truncatedLabel = label.length > 20 ? `${label.substring(0, 18)}...` : label;
   return (
      <g transform={`translate(${x},${y})`}>
