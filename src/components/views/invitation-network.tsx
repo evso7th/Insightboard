@@ -1,6 +1,7 @@
 
 'use client';
-import { Share2, Users, CalendarCheck, Download, Star } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Share2, Users, CalendarCheck, Download, Star, FilterX } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getInvitationNetwork } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
@@ -14,11 +15,41 @@ import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
 
 export function InvitationNetworkView({ data }: { data: MessageData[] }) {
-  const { topInviter, totalInvitations, averageInvitations, networkData, topInvitersChartData, topInvitee, inviteeData, topInviteesChartData } = getInvitationNetwork(data);
+  const [selectedParticipant, setSelectedParticipant] = useState<{ name: string; type: 'inviter' | 'invitee' } | null>(null);
+
+  const { 
+    topInviter, 
+    totalInvitations, 
+    averageInvitations, 
+    networkData, 
+    topInvitersChartData, 
+    topInvitee,
+    inviteeData,
+    topInviteesChartData 
+  } = useMemo(() => getInvitationNetwork(data), [data]);
+  
+  const filteredNetworkData = useMemo(() => {
+    if (!selectedParticipant) return networkData;
+    if (selectedParticipant.type === 'inviter') {
+      return networkData.filter(item => item.from.toLowerCase() === selectedParticipant.name.toLowerCase());
+    }
+    // For invitee, we still show the full network data list but it could be filtered if needed.
+    // This implementation filters the "from -> to" table for inviter clicks.
+    return networkData.filter(item => item.to.toLowerCase() === selectedParticipant.name.toLowerCase());
+  }, [networkData, selectedParticipant]);
+
+  const filteredInviteeData = useMemo(() => {
+    if (!selectedParticipant) return inviteeData;
+     if (selectedParticipant.type === 'invitee') {
+       return inviteeData.filter(item => item.name.toLowerCase() === selectedParticipant.name.toLowerCase());
+     }
+    return inviteeData;
+  }, [inviteeData, selectedParticipant]);
+
 
   const handleExportNetwork = () => {
     const headers = ['"Кто пригласил"', '"Кого пригласил"', '"Дата"'];
-    const dataToExport = networkData.map(row => 
+    const dataToExport = filteredNetworkData.map(row => 
       `"${row.from.replace(/"/g, '""')}","${row.to.replace(/"/g, '""')}","${row.date}"`
     );
     exportToCSV(headers, dataToExport, "invitation_network.csv");
@@ -26,16 +57,19 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
 
   const handleExportInvitees = () => {
     const headers = ['"Кого пригласили"', '"Кол-во"'];
-    const dataToExport = inviteeData.map(row => `"${row.name.replace(/"/g, '""')}",${row.count}`);
+    const dataToExport = filteredInviteeData.map(row => `"${row.name.replace(/"/g, '""')}",${row.count}`);
     exportToCSV(headers, dataToExport, 'top_invitees.csv');
   };
-
-  const handleExportInviters = () => {
-    const headers = ['"Кто пригласил"', '"Кол-во"'];
-    const dataToExport = topInvitersChartData
-        .map(row => `"${row.name.replace(/"/g, '""')}",${row.count}`)
-        .sort((a,b) => b.count - a.count);
-    exportToCSV(headers, dataToExport, 'top_inviters.csv');
+  
+  const handleChartClick = (payload: any, type: 'inviter' | 'invitee') => {
+    if (payload && payload.activePayload) {
+      const participantName = payload.activePayload[0].payload.name;
+      if(selectedParticipant && selectedParticipant.name === participantName && selectedParticipant.type === type) {
+        setSelectedParticipant(null); // Deselect if clicking the same bar
+      } else {
+        setSelectedParticipant({ name: participantName, type });
+      }
+    }
   };
 
   const aiInput = {
@@ -65,22 +99,22 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
         <KpiCard title="Общее число приглашений" value={totalInvitations} icon={Share2} />
         <KpiCard title="Среднее число приглашений" value={averageInvitations.toFixed(2)} icon={CalendarCheck} description="на участника" />
       </div>
-      
+
        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <Card>
           <CardHeader>
             <CardTitle>ТОП-10 приглашающих</CardTitle>
-            <CardDescription>Наиболее активные участники по отправленным приглашениям</CardDescription>
+            <CardDescription>Нажмите на столбец для фильтрации таблицы справа</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topInvitersChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+                <BarChart data={topInvitersChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }} onClick={(e) => handleChartClick(e, 'inviter')}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={100} />
                   <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                  <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Приглашения" radius={[0, 4, 4, 0]}>
+                  <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Приглашения" radius={[0, 4, 4, 0]} className="cursor-pointer">
                     <LabelList dataKey="count" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
                   </Bar>
                 </BarChart>
@@ -91,13 +125,25 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
         <Card>
           <CardHeader className="flex flex-row items-start justify-between">
             <div>
-              <CardTitle>Список всех приглашений</CardTitle>
+              <CardTitle>
+                {selectedParticipant && selectedParticipant.type === 'inviter' 
+                  ? `Приглашения от: ${selectedParticipant.name}` 
+                  : "Список всех приглашений"}
+              </CardTitle>
               <CardDescription>Данные в формате "Кто пригласил" → "Кого пригласил"</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={handleExportNetwork} disabled={networkData.length === 0}>
-              <Download className="mr-2 h-4 w-4" />
-              CSV
-            </Button>
+            <div className="flex gap-2">
+              {selectedParticipant && (
+                 <Button variant="outline" size="sm" onClick={() => setSelectedParticipant(null)}>
+                    <FilterX className="mr-2 h-4 w-4"/>
+                    Сбросить
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleExportNetwork} disabled={networkData.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="h-[400px]">
             <ScrollArea className="h-full">
@@ -110,7 +156,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {networkData.map((row, index) => (
+                  {filteredNetworkData.map((row, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{row.from}</TableCell>
                       <TableCell>{row.to}</TableCell>
@@ -128,17 +174,17 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
         <Card>
           <CardHeader>
             <CardTitle>ТОП-10 приглашенных</CardTitle>
-            <CardDescription>Наиболее востребованные участники</CardDescription>
+            <CardDescription>Нажмите на столбец для фильтрации таблицы справа</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfigInvitee}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+                <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }} onClick={(e) => handleChartClick(e, 'invitee')}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={100} />
                   <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                  <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Получено" radius={[0, 4, 4, 0]}>
+                  <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Получено" radius={[0, 4, 4, 0]} className="cursor-pointer">
                     <LabelList dataKey="count" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
                   </Bar>
                 </BarChart>
@@ -149,13 +195,25 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
         <Card>
           <CardHeader className="flex flex-row items-start justify-between">
             <div>
-              <CardTitle>Рейтинг приглашенных</CardTitle>
+              <CardTitle>
+                 {selectedParticipant && selectedParticipant.type === 'invitee' 
+                  ? `Кого приглашали: ${selectedParticipant.name}`
+                  : "Рейтинг приглашенных"}
+              </CardTitle>
               <CardDescription>Список всех участников, которых приглашали</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={handleExportInvitees} disabled={inviteeData.length === 0}>
-              <Download className="mr-2 h-4 w-4" />
-              CSV
-            </Button>
+             <div className="flex gap-2">
+              {selectedParticipant && (
+                 <Button variant="outline" size="sm" onClick={() => setSelectedParticipant(null)}>
+                    <FilterX className="mr-2 h-4 w-4"/>
+                    Сбросить
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleExportInvitees} disabled={inviteeData.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="h-[400px]">
             <ScrollArea className="h-full">
@@ -167,7 +225,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {inviteeData.map((row, index) => (
+                  {filteredInviteeData.map((row, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium">{row.name}</TableCell>
                       <TableCell className="text-right">{row.count}</TableCell>
