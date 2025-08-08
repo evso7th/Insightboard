@@ -80,7 +80,14 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
     participantsWithCounts, // This should contain all participants for the dropdown
     top10Participants, // This is static based on all data
     activityByDate,
-    latestEvents: filteredData.slice(-20).reverse(),
+    latestEvents: filteredData.sort((a,b) => {
+        const dateA = parseDate(a['Дата']);
+        const dateB = parseDate(b['Дата']);
+        if (dateA && dateB) {
+            return dateB.getTime() - dateA.getTime();
+        }
+        return 0;
+    }).slice(0, 20),
   };
 };
 
@@ -289,3 +296,4 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
