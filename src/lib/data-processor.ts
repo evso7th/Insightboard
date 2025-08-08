@@ -227,39 +227,49 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 
 // 3. Activity by Companies
 export const getCompanyActivity = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', totalMentions: 0, companyData: [], top10CompanyChart: [] };
+  if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
   
-  const companies: { [key: string]: { offers: number; demands: number; roles: Set<string> } } = {};
+  const companies: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
 
   data.forEach(item => {
-    let company = item['Компания'] ? String(item['Компания']).trim() : '';
-    if (!company || company === '-' || company.toLowerCase() === 'n/a' || company.toLowerCase() === 'na') {
-      company = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
+    const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
+    let isAuthorReplacement = false;
+    let companyName = originalCompany;
+
+    if (!companyName || companyName === '-' || companyName.toLowerCase() === 'n/a' || companyName.toLowerCase() === 'na') {
+      companyName = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
+      isAuthorReplacement = true;
     }
 
-    if (company) {
-      if (!companies[company]) {
-        companies[company] = { offers: 0, demands: 0, roles: new Set() };
+    if (companyName) {
+      if (!companies[companyName]) {
+        companies[companyName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthorReplacement };
       }
       const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
       if (eventType === 'предложение') {
-        companies[company].offers++;
+        companies[companyName].offers++;
       } else if (eventType === 'спрос') {
-        companies[company].demands++;
+        companies[companyName].demands++;
       }
       const roleList = processRoles(item['Роль']);
       roleList.forEach(role => {
-        if(role) companies[company].roles.add(role)
+        if(role) companies[companyName].roles.add(role)
       });
     }
   });
 
-  const companyData = Object.entries(companies).map(([name, data]) => ({
+  const allParticipants = Object.entries(companies).map(([name, data]) => ({
     name,
     offers: data.offers,
     demands: data.demands,
     uniqueRoles: data.roles.size,
-  })).sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
+    isAuthor: data.isAuthor,
+  }));
+  
+  const realCompanies = allParticipants.filter(p => !p.isAuthor).sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
+  const authorsAsCompanies = allParticipants.filter(p => p.isAuthor).sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
+  
+  const companyData = [...realCompanies, ...authorsAsCompanies];
 
   const topOfferingCompany = [...companyData].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingCompany = [...companyData].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
@@ -269,7 +279,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
     topDemandingCompany,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
-    top10CompanyChart: [...companyData].sort((a,b) => b.offers - a.offers).slice(0, 10),
+    top20CompanyChart: [...companyData].sort((a,b) => b.offers - a.offers).slice(0, 20),
   };
 };
 

@@ -46,7 +46,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top10CompanyChart } = useMemo(() => {
+  const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top20CompanyChart } = useMemo(() => {
     return getCompanyActivity(data);
   }, [data]);
 
@@ -68,10 +68,10 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const aiInput = {
     dataSummary: selectedParticipant 
       ? `Анализ для участника "${selectedParticipant}" за ${selectedYear || 'все время'}. Данные показывают спрос и предложение по ролям.`
-      : `Топ-1 участник по предложениям: ${topOfferingCompany}, Топ-1 участник по спросу: ${topDemandingCompany}, Общее число упоминаний участников: ${totalMentions}.`,
+      : `Топ-1 компания по предложениям: ${topOfferingCompany}, Топ-1 компания по спросу: ${topDemandingCompany}, Общее число упоминаний компаний: ${totalMentions}.`,
     viewDescription: selectedParticipant
       ? `Это детальное представление активности участника "${selectedParticipant}", показывающее разбивку по спросу и предложению для каждой роли.`
-      : "Это представление фокусируется на активности различных участников. Оно определяет ведущих участников по предложениям и спросу и позволяет детализировать данные по каждому из них."
+      : "Это представление фокусируется на активности различных компаний и участников. Оно определяет ведущих участников по предложениям и спросу и позволяет детализировать данные по каждому из них."
   };
 
   const chartConfig = {
@@ -84,7 +84,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
       <div className="flex flex-col gap-4">
         <Button onClick={handleBackToOverview} variant="ghost" className="self-start">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Вернуться к списку участников
+          Вернуться к списку
         </Button>
         <Card>
           <CardHeader>
@@ -103,7 +103,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-5">
             <div className="h-[400px] w-full md:col-span-3">
-              <ChartContainer config={chartConfig} className="h-full w-full">
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
@@ -113,7 +113,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                   <Bar dataKey="demands" fill="hsl(var(--accent))" name="Спрос" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[4, 4, 0, 0]} />
                 </BarChart>
-              </ChartContainer>
+              </ResponsiveContainer>
             </div>
              <div className="h-[400px] md:col-span-2">
               <ScrollArea className="h-full">
@@ -147,19 +147,19 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
-        <KpiCard title="Топ-1 участник по предложениям" value={topOfferingCompany} icon={Briefcase} />
-        <KpiCard title="Топ-1 участник по спросу" value={topDemandingCompany} icon={Users} />
+        <KpiCard title="Топ-1 компания по предложениям" value={topOfferingCompany} icon={Briefcase} />
+        <KpiCard title="Топ-1 компания по спросу" value={topDemandingCompany} icon={Users} />
         <KpiCard title="Общее число упоминаний" value={totalMentions} icon={Building} />
       </div>
       
       <Card className="xl:col-span-2">
         <CardHeader>
-          <CardTitle>ТОП-10 участников по числу предложений</CardTitle>
+          <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>
           <CardDescription>Нажмите на столбец для детализации</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
-          <ChartContainer config={chartConfig} className="h-full w-full">
-            <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick />} tickLine={false} axisLine={false} />
@@ -168,14 +168,14 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                  <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
               </Bar>
             </BarChart>
-          </ChartContainer>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Активность участников</CardTitle>
-          <CardDescription>Нажмите на строку для детализации</CardDescription>
+          <CardTitle>Активность по компаниям</CardTitle>
+          <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px]">
            <ScrollArea className="h-full">
