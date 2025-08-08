@@ -12,15 +12,22 @@ const countBy = (data: any[], key: string) => {
   }, {});
 };
 
-// Helper to parse DD.MM.YYYY date strings
+// Helper to parse DD.MM.YYYY or DD.MM.YY date strings
 const parseDate = (dateString: string): Date | null => {
     if (!dateString || typeof dateString !== 'string') return null;
     const parts = dateString.split('.');
     if (parts.length === 3) {
-        // new Date(year, monthIndex, day)
-        const date = new Date(+parts[2], +parts[1] - 1, +parts[0]);
-        // Check if the parsed date is valid and the year is reasonable
-        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
+        let year = parseInt(parts[2], 10);
+        // Handle 2-digit years, assuming they are in the 21st century
+        if (year < 100) {
+            year += 2000;
+        }
+        const month = parseInt(parts[1], 10) - 1; // month is 0-indexed
+        const day = parseInt(parts[0], 10);
+        
+        const date = new Date(year, month, day);
+
+        if (!isNaN(date.getTime()) && date.getFullYear() >= 2000) {
             return date;
         }
     }
