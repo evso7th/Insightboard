@@ -226,11 +226,13 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 
 // 3. Activity by Companies
 export const getCompanyActivity = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
+  const excludedAuthors = ['QA'];
+  const filteredData = data.filter(d => !excludedAuthors.includes(d['Отправитель']));
+  if (!filteredData || filteredData.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
 
   const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
 
-  data.forEach(item => {
+  filteredData.forEach(item => {
     const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
     const author = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
 
