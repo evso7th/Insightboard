@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { BarChart, Briefcase, Users } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
-import { getGeneralActivityMetrics, getParticipantMetrics } from "@/lib/data-processor";
+import { getGeneralActivityMetrics, getParticipantMetrics, TimeRange } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
@@ -13,22 +13,23 @@ import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { subDays, parse } from 'date-fns';
+import { parse } from 'date-fns';
 
-const TIME_RANGES = [
-  { value: 0, label: 'Все время' },
-  { value: 1, label: 'Год' },
-  { value: 2, label: 'Месяц' },
-  { value: 3, label: 'Неделя' },
+const TIME_RANGES: { value: TimeRange, label: string }[] = [
+  { value: 'all', label: 'Все время' },
+  { value: 'year', label: 'Год' },
+  { value: 'month', label: 'Месяц' },
+  { value: 'week', label: 'Неделя' },
 ];
+
+const timeRangeMap: TimeRange[] = ['all', 'year', 'month', 'week'];
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
-  const [timeRangeIndex, setTimeRangeIndex] = useState(0);
+  const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
-  const { participantsWithCounts, top10Participants, totalEvents: allEvents } = useMemo(() => {
-    const metrics = getGeneralActivityMetrics(data);
-    return { ...metrics, totalEvents: data.length };
+  const { participantsWithCounts, top10Participants, totalEvents: allEvents, latestDate } = useMemo(() => {
+    return getGeneralActivityMetrics(data);
   }, [data]);
   
   const {
@@ -42,40 +43,8 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       ? data.filter(d => d['Отправитель'] === selectedParticipant)
       : data;
       
-    const metrics = getParticipantMetrics(filteredData);
-
-    const now = new Date();
-    let startDate: Date | null = null;
-    switch (timeRangeIndex) {
-      case 1: // Year
-        startDate = subDays(now, 365);
-        break;
-      case 2: // Month
-        startDate = subDays(now, 30);
-        break;
-      case 3: // Week
-        startDate = subDays(now, 7);
-        break;
-      default: // All time
-        startDate = null;
-    }
-    
-    const timeFilteredActivity = startDate 
-      ? metrics.activityByDate.filter(d => {
-          try {
-            const itemDate = parse(d.date, 'dd.MM.yy', new Date());
-            return itemDate >= startDate!;
-          } catch(e) {
-            return false;
-          }
-        })
-      : metrics.activityByDate;
-
-    return {
-      ...metrics,
-      activityByDate: timeFilteredActivity,
-    };
-  }, [data, selectedParticipant, timeRangeIndex]);
+    return getParticipantMetrics(filteredData, timeRange, latestDate);
+  }, [data, selectedParticipant, timeRange, latestDate]);
   
   const aiInput = {
     dataSummary: `Статистика для ${selectedParticipant || 'всех участников'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
@@ -92,6 +61,12 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const handleParticipantChange = (value: string | null) => {
     setSelectedParticipant(value === 'all' ? null : value);
   };
+  
+  const handleSliderChange = (value: number[]) => {
+    setTimeRange(timeRangeMap[value[0]]);
+  }
+
+  const currentTimeRangeIndex = useMemo(() => timeRangeMap.indexOf(timeRange), [timeRange]);
   
   return (
     <div className="flex flex-col gap-4 md:gap-8">
@@ -145,19 +120,19 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
           </CardContent>
            <CardContent className="pt-4 flex items-center gap-4">
             <Slider
-              defaultValue={[timeRangeIndex]}
+              value={[currentTimeRangeIndex]}
               min={0}
               max={TIME_RANGES.length - 1}
               step={1}
-              onValueChange={(value) => setTimeRangeIndex(value[0])}
+              onValueChange={handleSliderChange}
               className="w-1/2 mx-auto"
             />
             <div className="flex w-1/2 justify-between text-xs text-muted-foreground">
               {TIME_RANGES.map((range, index) => (
                 <span 
                   key={range.value} 
-                  className={`cursor-pointer ${timeRangeIndex === index ? 'font-bold text-foreground' : ''}`}
-                  onClick={() => setTimeRangeIndex(index)}
+                  className={`cursor-pointer ${currentTimeRangeIndex === index ? 'font-bold text-foreground' : ''}`}
+                  onClick={() => setTimeRange(range.value)}
                 >
                   {range.label}
                 </span>
@@ -248,4 +223,3 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-

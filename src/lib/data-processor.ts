@@ -1,5 +1,8 @@
 
 import type { MessageData } from '@/types';
+import { subDays, parse } from 'date-fns';
+
+export type TimeRange = 'all' | 'year' | 'month' | 'week';
 
 // Helper to count occurrences
 const countBy = (data: any[], key: string) => {
@@ -51,6 +54,8 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
     return {
       participantsWithCounts: [],
       top10Participants: [],
+      totalEvents: 0,
+      latestDate: new Date(),
     };
   }
   
@@ -67,14 +72,21 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
     .sort((a, b) => b.count - a.count);
   const top10Participants = participantsWithCounts.slice(0, 10);
 
+  const latestDate = data.reduce((max, item) => {
+    const d = parseDate(item['Дата']);
+    return d && d > max ? d : max;
+  }, new Date(0));
+
   return {
     participantsWithCounts,
     top10Participants,
+    totalEvents: data.length,
+    latestDate,
   };
 };
 
 // This function calculates metrics for a given dataset (which can be pre-filtered).
-export const getParticipantMetrics = (data: MessageData[]) => {
+export const getParticipantMetrics = (data: MessageData[], timeRange: TimeRange, latestDate: Date) => {
   if (!data || data.length === 0) {
     return {
       totalEvents: 0,
@@ -85,13 +97,32 @@ export const getParticipantMetrics = (data: MessageData[]) => {
     };
   }
 
-  const counts = countBy(data, 'Тип события');
-  
   const datedData = data
     .map(item => ({ ...item, dateObj: parseDate(item['Дата']) }))
     .filter((item): item is MessageData & { dateObj: Date } => item.dateObj !== null);
+
+  let startDate: Date | null = null;
+  switch (timeRange) {
+    case 'year':
+      startDate = subDays(latestDate, 365);
+      break;
+    case 'month':
+      startDate = subDays(latestDate, 30);
+      break;
+    case 'week':
+      startDate = subDays(latestDate, 7);
+      break;
+    default: // all
+      startDate = null;
+  }
+
+  const timeFilteredData = startDate
+    ? datedData.filter(item => item.dateObj! >= startDate!)
+    : datedData;
   
-  const activityByDateCounts = datedData.reduce((acc: { [key: string]: number }, item) => {
+  const counts = countBy(timeFilteredData, 'Тип события');
+  
+  const activityByDateCounts = timeFilteredData.reduce((acc: { [key: string]: number }, item) => {
     const dateKey = item.dateObj.toISOString().split('T')[0];
     acc[dateKey] = (acc[dateKey] || 0) + 1;
     return acc;
@@ -109,7 +140,7 @@ export const getParticipantMetrics = (data: MessageData[]) => {
     });
 
   return {
-    totalEvents: data.length,
+    totalEvents: timeFilteredData.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
     activityByDate,
@@ -329,5 +360,3 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
-
-    
