@@ -135,6 +135,12 @@ export const getParticipantMetrics = (data: MessageData[], year: number | null) 
 };
 
 
+const processRoles = (roleString: string): string[] => {
+    if (!roleString) return [];
+    // Split by comma or slash, trim whitespace, and filter out empty strings
+    return roleString.split(/[,/]/).map(r => r.trim()).filter(r => r);
+};
+
 // 2. Demand vs. Supply by Roles
 export const getDemandSupplyByRole = (data: MessageData[], year: number | null) => {
    if (!data || data.length === 0) return { rolesInDemand: 0, rolesInSupply: 0, imbalance: 0, roleData: [], top10RolesChart: [], uniqueYears: [] };
@@ -146,25 +152,25 @@ export const getDemandSupplyByRole = (data: MessageData[], year: number | null) 
       years.add(date.getUTCFullYear());
     }
     return { ...item, dateObj: date };
-  }).filter(item => item.dateObj !== null);
+  }).filter((item): item is typeof item & {dateObj: Date} => item.dateObj !== null);
 
   const filteredData = year ? datedData.filter(item => item.dateObj?.getUTCFullYear() === year) : datedData;
 
   const roles: { [key: string]: { demand: number; supply: number } } = {};
 
   filteredData.forEach(item => {
-    const role = item['Роль'];
-    if (role) {
-      if (!roles[role]) {
-        roles[role] = { demand: 0, supply: 0 };
-      }
-      const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
-      if (eventType === 'спрос') {
-        roles[role].demand++;
-      } else if (eventType === 'предложение') {
-        roles[role].supply++;
-      }
-    }
+    const roleList = processRoles(item['Роль']);
+    roleList.forEach(role => {
+        if (!roles[role]) {
+            roles[role] = { demand: 0, supply: 0 };
+        }
+        const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+        if (eventType === 'спрос') {
+            roles[role].demand++;
+        } else if (eventType === 'предложение') {
+            roles[role].supply++;
+        }
+    });
   });
   
   const roleData = Object.entries(roles).map(([role, { demand, supply }]) => ({
@@ -191,7 +197,8 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
   const yearlyData: { [key: number]: { demand: number; supply: number } } = {};
 
   data.forEach(item => {
-    if (item['Роль'] === role) {
+    const roleList = processRoles(item['Роль']);
+    if (roleList.includes(role)) {
       const date = parseDate(item['Дата']);
       if (date) {
         const year = date.getUTCFullYear();
@@ -237,7 +244,8 @@ export const getCompanyActivity = (data: MessageData[]) => {
         companies[company].demands++;
       }
       if (item['Роль']) {
-        companies[company].roles.add(item['Роль']);
+        const roleList = processRoles(item['Роль']);
+        roleList.forEach(role => companies[company].roles.add(role));
       }
     }
   });
@@ -278,18 +286,18 @@ export const getCompanyDetail = (data: MessageData[], company: string, year: num
   const roles: { [key: string]: { offers: number; demands: number } } = {};
 
   filteredData.forEach(item => {
-    const role = item['Роль'];
-    if (role) {
-      if (!roles[role]) {
-        roles[role] = { offers: 0, demands: 0 };
-      }
-      const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
-      if (eventType === 'предложение') {
-        roles[role].offers++;
-      } else if (eventType === 'спрос') {
-        roles[role].demands++;
-      }
-    }
+    const roleList = processRoles(item['Роль']);
+    roleList.forEach(role => {
+        if (!roles[role]) {
+            roles[role] = { offers: 0, demands: 0 };
+        }
+        const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+        if (eventType === 'предложение') {
+            roles[role].offers++;
+        } else if (eventType === 'спрос') {
+            roles[role].demands++;
+        }
+    })
   });
 
   const companyDetails = Object.entries(roles).map(([role, { offers, demands }]) => ({
@@ -375,11 +383,14 @@ export const getGeoAndRates = (data: MessageData[]) => {
   const rateByRole: { [key: string]: { rates: number[], geos: Set<string> } } = {};
   data.forEach(item => {
     if (item['Роль'] && item['Ставка (руб/ч)'] != null) {
-      if (!rateByRole[item['Роль']]) {
-        rateByRole[item['Роль']] = { rates: [], geos: new Set() };
-      }
-      rateByRole[item['Роль']].rates.push(item['Ставка (руб/ч)']);
-      if(item['Гео / локация']) rateByRole[item['Роль']].geos.add(item['Гео / локация']);
+        const roleList = processRoles(item['Роль']);
+        roleList.forEach(role => {
+            if (!rateByRole[role]) {
+                rateByRole[role] = { rates: [], geos: new Set() };
+            }
+            rateByRole[role].rates.push(item['Ставка (руб/ч)'] as number);
+            if(item['Гео / локация']) rateByRole[role].geos.add(item['Гео / локация']);
+        })
     }
   });
 

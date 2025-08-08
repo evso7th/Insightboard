@@ -27,6 +27,20 @@ const CustomTick = (props: any) => {
   );
 };
 
+const XAxisRoleTick = (props: any) => {
+    const { x, y, payload } = props;
+    const label = payload.value;
+    const truncatedLabel = label.length > 10 ? `${label.substring(0, 8)}...` : label;
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <title>{label}</title>
+            <text x={0} y={0} dy={16} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12} transform="rotate(-35)">
+                {truncatedLabel}
+            </text>
+        </g>
+    );
+};
+
 
 export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
@@ -87,12 +101,12 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                </div>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="h-[350px] w-full pl-2">
+          <CardContent className="grid gap-6 md:grid-cols-5">
+            <div className="h-[400px] w-full md:col-span-3">
               <ChartContainer config={chartConfig} className="h-full w-full">
-                <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 70 }}>
+                <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
+                  <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                   <Legend wrapperStyle={{fontSize: "12px"}}/>
@@ -101,13 +115,13 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                 </BarChart>
               </ChartContainer>
             </div>
-             <div className="h-[350px]">
+             <div className="h-[400px] md:col-span-2">
               <ScrollArea className="h-full">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Роль</TableHead>
-                      <TableHead>Предложения</TableHead>
+                      <TableHead>Предл.</TableHead>
                       <TableHead>Спрос</TableHead>
                     </TableRow>
                   </TableHeader>
