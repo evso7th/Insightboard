@@ -83,8 +83,8 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   if (selectedParticipant) {
     return (
       <div className="grid gap-4 md:gap-8">
-        <div>
-          <Button onClick={handleBackToOverview} variant="ghost" className="mb-4">
+        <div className="grid gap-4">
+          <Button onClick={handleBackToOverview} variant="ghost" className="mb-4 justify-self-start">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Вернуться к списку
           </Button>
