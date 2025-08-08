@@ -15,8 +15,8 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   const { uniqueNiches, topNiche, urgentExpertise, nicheData, heatmapData } = getNicheExpertise(data);
 
   const aiInput = {
-    dataSummary: `Total unique niches: ${uniqueNiches}, Top niche: ${topNiche}, Urgent expertise needs: ${urgentExpertise}. The data shows which niches are most mentioned, which companies are associated with them, and provides context examples.`,
-    viewDescription: "This view analyzes niche or unique expertise mentioned in the data. It helps identify trending specializations, the companies seeking them, and the urgency associated with these skills."
+    dataSummary: `Всего уникальных ниш: ${uniqueNiches}, Топ-1 ниша: ${topNiche}, Экспертиз с высокой срочностью: ${urgentExpertise}. Данные показывают, какие ниши наиболее упоминаемы, какие компании с ними связаны, и приводят примеры контекста.`,
+    viewDescription: "Это представление анализирует нишевую или уникальную экспертизу, упомянутую в данных. Оно помогает выявить трендовые специализации, компании, которые их ищут, и срочность, связанную с этими навыками."
   };
 
   const companies = Array.from(new Set(heatmapData.map(d => d.company)));

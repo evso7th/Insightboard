@@ -27,8 +27,8 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top10CompanyChart } = getCompanyActivity(data);
 
   const aiInput = {
-    dataSummary: `Top offering company: ${topOfferingCompany}, Top demanding company: ${topDemandingCompany}, Total company mentions: ${totalMentions}. The chart and table show offers, demands, and unique roles per company.`,
-    viewDescription: "This view focuses on the activity of different companies in the dataset. It identifies the top companies for offering positions and for seeking talent, and provides a breakdown of their activity levels."
+    dataSummary: `Топ-1 компания по предложениям: ${topOfferingCompany}, Топ-1 компания по спросу: ${topDemandingCompany}, Общее число упоминаний компаний: ${totalMentions}. График и таблица показывают предложения, спрос и уникальные роли по каждой компании.`,
+    viewDescription: "Это представление фокусируется на активности различных компаний в наборе данных. Оно определяет ведущие компании по предложениям должностей и по поиску талантов, а также предоставляет разбивку их уровней активности."
   };
 
   const chartConfig = {

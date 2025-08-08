@@ -17,8 +17,8 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
   const { rfShare, averageRate, maxRate, geoSplit, rateData, boxPlotData } = getGeoAndRates(data);
 
   const aiInput = {
-    dataSummary: `RF share of geo: ${rfShare.toFixed(1)}%. Average rate: ${Math.round(averageRate)} руб/ч. Max rate: ${maxRate} руб/ч. Data shows geo distribution and rate analysis by role.`,
-    viewDescription: "This view analyzes the geographical distribution of activities and the associated pay rates. It highlights the proportion of domestic versus international activities and provides a breakdown of salary rates by role."
+    dataSummary: `Доля РФ в гео: ${rfShare.toFixed(1)}%. Средняя ставка: ${Math.round(averageRate)} руб/ч. Максимальная ставка: ${maxRate} руб/ч. Данные показывают распределение по географии и анализ ставок по ролям.`,
+    viewDescription: "Это представление анализирует географическое распределение активностей и связанные с ними ставки оплаты. Оно показывает долю внутренних и международных активностей и предоставляет разбивку по зарплатным ставкам для каждой роли."
   };
 
   const chartConfig = {

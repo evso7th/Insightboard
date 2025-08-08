@@ -12,8 +12,8 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
   const { topInviter, totalInvitations, averageInvitations, networkData } = getInvitationNetwork(data);
 
   const aiInput = {
-    dataSummary: `Top inviter: ${topInviter}, Total invitations: ${totalInvitations}, Average invitations per participant: ${averageInvitations.toFixed(2)}. The table lists all 'from -> to' invitation connections.`,
-    viewDescription: "This view maps the network of invitations between participants. It shows who is inviting whom, identifies the most active inviters, and quantifies the overall invitation activity."
+    dataSummary: `Топ-1 приглашающий: ${topInviter}, Всего приглашений: ${totalInvitations}, Среднее число приглашений на участника: ${averageInvitations.toFixed(2)}. Таблица содержит все связи приглашений "от -> к".`,
+    viewDescription: "Это представление отображает сеть приглашений между участниками. Оно показывает, кто кого приглашает, выявляет самых активных приглашающих и количественно оценивает общую активность по приглашениям."
   };
 
   return (

@@ -46,15 +46,15 @@ const insightPrompt = ai.definePrompt({
   name: 'insightPrompt',
   input: {schema: GenerateInsightInputSchema},
   output: {schema: GenerateInsightOutputSchema},
-  prompt: `You are an expert data analyst. Your task is to analyze the provided data summary and generate key insights.
+  prompt: `Ты — эксперт по анализу данных. Твоя задача — проанализировать предоставленную сводку данных и сгенерировать ключевые выводы.
 
-Data Summary: {{{dataSummary}}}
-View Description: {{{viewDescription}}}
+Сводка данных: {{{dataSummary}}}
+Описание представления: {{{viewDescription}}}
 
-Based on the data summary and the view description, identify and articulate significant trends, anomalies, and correlations.
-Provide these insights in a concise and easily understandable manner.
+Основываясь на сводке данных и описании представления, определи и сформулируй значимые тенденции, аномалии и корреляции.
+Предоставь эти выводы в краткой и понятной форме. Ответ должен быть только на русском языке.
 
-Insights:`, // Using a more direct prompt for generating insights
+Выводы:`,
 });
 
 const generateInsightFlow = ai.defineFlow(

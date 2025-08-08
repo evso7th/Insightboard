@@ -15,8 +15,8 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
   const { rolesInDemand, rolesInSupply, imbalance, roleData, top10RolesChart } = getDemandSupplyByRole(data);
   
   const aiInput = {
-    dataSummary: `Total roles in demand: ${rolesInDemand}, Total roles in supply: ${rolesInSupply}, Imbalance: ${imbalance}. The chart compares demand and supply for the top 10 roles. The table provides a full breakdown.`,
-    viewDescription: "This view analyzes the job market by comparing demand (requests for roles) versus supply (offers for roles). It highlights which roles are most sought after and which are most available, showing the balance for each."
+    dataSummary: `Всего ролей в спросе: ${rolesInDemand}, Всего ролей в предложении: ${rolesInSupply}, Дисбаланс: ${imbalance}. График сравнивает спрос и предложение для топ-10 ролей. В таблице представлена полная разбивка.`,
+    viewDescription: "Это представление анализирует рынок труда, сравнивая спрос (запросы на роли) с предложением (предложения ролей). Оно показывает, какие роли наиболее востребованы, а какие наиболее доступны, и демонстрирует баланс для каждой из них."
   };
 
   const chartConfig = {
