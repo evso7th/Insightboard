@@ -7,7 +7,7 @@ import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis, Tooltip } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
@@ -40,19 +40,19 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Карта упоминаний: Ниша × Компания</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px] w-full">
+        <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 40, left: 60 }}>
+            <ScatterChart margin={{ top: 20, right: 20, bottom: 80, left: 120 }}>
               <CartesianGrid />
               <XAxis type="category" dataKey="company" name="Company"
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                 ticks={companies}
-                angle={-45} textAnchor="end" height={50}
+                angle={-45} textAnchor="end" height={80} interval={0}
                 />
               <YAxis type="category" dataKey="niche" name="Niche" 
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                 ticks={nichesForChart}
-                width={120}
+                width={120} interval={0}
                />
               <ZAxis type="number" dataKey="value" range={[100, 500]} name="Mentions" />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<ChartTooltipContent />} />
@@ -66,8 +66,8 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Данные по нишам</CardTitle>
         </CardHeader>
-        <CardContent>
-           <ScrollArea className="h-[300px]">
+        <CardContent className="h-[350px]">
+           <ScrollArea className="h-full">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -7,7 +7,7 @@ import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
@@ -42,11 +42,11 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Спрос и предложение по ТОП-10 ролям</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px] w-full">
+        <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig}>
-            <BarChart data={top10RolesChart} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+            <BarChart data={top10RolesChart} margin={{ top: 5, right: 20, left: 10, bottom: 70 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
+              <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
               <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
               <Legend wrapperStyle={{fontSize: "12px"}}/>
@@ -61,8 +61,8 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Сводная таблица по ролям</CardTitle>
         </CardHeader>
-        <CardContent>
-           <ScrollArea className="h-[300px]">
+        <CardContent className="h-[350px]">
+           <ScrollArea className="h-full">
             <Table>
               <TableHeader>
                 <TableRow>

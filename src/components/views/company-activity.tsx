@@ -7,35 +7,17 @@ import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
-import { Text } from 'recharts';
 
-// Custom tick for Y-axis to wrap long labels
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
   const label = payload.value;
-  // Simple wrapping logic, adjust as needed
-  const words = label.split(' ');
-  const lines = [] as string[];
-  let currentLine = '';
-  words.forEach((word: string) => {
-    if ((currentLine + word).length < 20) {
-      currentLine += ` ${word}`;
-    } else {
-      lines.push(currentLine.trim());
-      currentLine = word;
-    }
-  });
-  lines.push(currentLine.trim());
-
   return (
      <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={10}>
-        {lines.map((line, index) => (
-          <tspan x={0} dy={index === 0 ? 0 : 12} key={index}>{line}</tspan>
-        ))}
+      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12}>
+        {label}
       </text>
     </g>
   );
@@ -68,9 +50,9 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>ТОП-10 компаний по числу предложений</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px] w-full">
+        <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig}>
-            <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+            <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
               <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick />} tickLine={false} axisLine={false} />
@@ -87,8 +69,8 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Активность компаний</CardTitle>
         </CardHeader>
-        <CardContent>
-           <ScrollArea className="h-[300px]">
+        <CardContent className="h-[350px]">
+           <ScrollArea className="h-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -118,5 +100,3 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-    

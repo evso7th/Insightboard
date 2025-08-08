@@ -7,7 +7,7 @@ import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Pie, PieChart, Tooltip, ResponsiveContainer, Cell, Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts";
+import { Pie, PieChart, Tooltip, Cell, Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
@@ -57,11 +57,11 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Доля по гео</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px] w-full flex items-center justify-center">
+        <CardContent className="h-[350px] w-full flex items-center justify-center pl-2">
           <ChartContainer config={geoConfig}>
             <PieChart>
               <Tooltip content={<ChartTooltipContent />} />
-              <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+              <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
                   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                   const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
                   const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
@@ -83,19 +83,17 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
       
       <Card>
         <CardHeader>
-          <CardTitle>Ставки по ролям (Мин/Сред/Макс)</CardTitle>
+          <CardTitle>Ставки по ролям (ТОП-10)</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px] w-full">
+        <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig}>
-                <BarChart data={boxPlotData} margin={{ top: 5, right: 20, left: -10, bottom: 50 }}>
+                <BarChart data={boxPlotData} margin={{ top: 5, right: 20, left: 10, bottom: 70 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
+                    <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
                     <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
                     <Legend wrapperStyle={{fontSize: "12px"}} />
-                    <Bar dataKey="minRate" stackId="a" fill="hsl(var(--chart-4))" name="Мин. ставка" />
-                    <Bar dataKey="averageRate" stackId="a" fill="hsl(var(--chart-2))" name="Сред. ставка" />
-                    <Bar dataKey="maxRate" stackId="a" fill="hsl(var(--chart-5))" name="Макс. ставка" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="averageRate" fill="hsl(var(--chart-2))" name="Сред. ставка" radius={[4, 4, 0, 0]} />
                 </BarChart>
             </ChartContainer>
         </CardContent>
@@ -105,8 +103,8 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Сводная таблица: Ставки по ролям</CardTitle>
         </CardHeader>
-        <CardContent>
-           <ScrollArea className="h-[300px]">
+        <CardContent className="h-[300px]">
+           <ScrollArea className="h-full">
             <Table>
               <TableHeader>
                 <TableRow>
