@@ -371,10 +371,10 @@ export const getNicheExpertise = (data: MessageData[]) => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
 
-    if (!nicheValue || typeof nicheValue !== 'string' || nicheValue.trim() === '') {
+    if (nicheValue === undefined || nicheValue === null || String(nicheValue).trim() === '') {
         niche = '(Не указана)';
     } else {
-        niche = nicheValue.trim();
+        niche = String(nicheValue).trim();
     }
     
     if (!niches[niche]) {
@@ -418,10 +418,14 @@ export const getNicheExpertise = (data: MessageData[]) => {
 
 // 5. Geography and Rates
 const parseRate = (rate: any): number[] => {
-    if (rate === null || rate === undefined || typeof rate === 'boolean') return [];
+    if (rate === null || rate === undefined) return [];
+    
+    const strRate = String(rate).replace(/ /g, '').toLowerCase();
 
-    const strRate = String(rate).replace(/ /g, '');
-    const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/[^0-9]/g, ''), 10));
+    // Ignore non-numeric values
+    if (!/\d/.test(strRate)) return [];
+
+    const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
     const validNumbers = numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
     
