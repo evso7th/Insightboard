@@ -262,7 +262,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
 };
 
 export const getCompanyDetail = (data: MessageData[], company: string, year: number | null) => {
-  const allCompanyData = data.filter(d => d['Компания'] === company);
+  const allCompanyData = data.filter(d => String(d['Компания']).trim() === company);
 
   const years = new Set<number>();
   const datedData = allCompanyData.map(item => {
