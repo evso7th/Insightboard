@@ -7,24 +7,39 @@ import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis, Tooltip } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
+const CustomTick = (props: any) => {
+  const { x, y, payload } = props;
+  const label = payload.value;
+  const truncatedLabel = label.length > 25 ? `${label.substring(0, 23)}...` : label;
+  
+  return (
+     <g transform={`translate(${x},${y})`}>
+      <title>{label}</title>
+      <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12}>
+        {truncatedLabel}
+      </text>
+    </g>
+  );
+};
+
 export function NicheExpertiseView({ data }: { data: MessageData[] }) {
-  const { uniqueNiches, topNiche, urgentExpertise, nicheData, heatmapData } = getNicheExpertise(data);
+  const { uniqueNiches, topNiche, urgentExpertise, nicheData } = getNicheExpertise(data);
 
   const aiInput = {
     dataSummary: `Всего уникальных ниш: ${uniqueNiches}, Топ-1 ниша: ${topNiche}, Экспертиз с высокой срочностью: ${urgentExpertise}. Данные показывают, какие ниши наиболее упоминаемы, какие компании с ними связаны, и приводят примеры контекста.`,
     viewDescription: "Это представление анализирует нишевую или уникальную экспертизу, упомянутую в данных. Оно помогает выявить трендовые специализации, компании, которые их ищут, и срочность, связанную с этими навыками."
   };
-
-  const companies = Array.from(new Set(heatmapData.map(d => d.company)));
-  const nichesForChart = Array.from(new Set(heatmapData.map(d => d.niche)));
+  
+  const chartData = nicheData.slice(0, 15).sort((a,b) => a.mentions - b.mentions);
 
   const chartConfig = {
     mentions: {
-      label: "Mentions",
+      label: "Упоминания",
+      color: "hsl(var(--primary))",
     },
   };
 
@@ -38,26 +53,21 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
       
       <Card className="xl:col-span-2">
         <CardHeader>
-          <CardTitle>Карта упоминаний: Топ-15 ниш × Компании</CardTitle>
+          <CardTitle>Топ-15 ниш по количеству упоминаний</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 80, left: 120 }}>
-              <CartesianGrid />
-              <XAxis type="category" dataKey="company" name="Company"
-                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                ticks={companies}
-                angle={-45} textAnchor="end" height={80} interval={0}
-                />
-              <YAxis type="category" dataKey="niche" name="Niche" 
-                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                ticks={nichesForChart}
-                width={120} interval={0}
-               />
-              <ZAxis type="number" dataKey="value" range={[100, 500]} name="Mentions" />
-              <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<ChartTooltipContent />} />
-              <Scatter name="Mentions" data={heatmapData} fill="hsl(var(--primary))" shape="circle" />
-            </ScatterChart>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="name" width={200} interval={0} tick={<CustomTick/>} tickLine={false} axisLine={false} />
+                <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                <Bar dataKey="mentions" fill="hsl(var(--primary))" name="Упоминания" radius={[0, 4, 4, 0]}>
+                   <LabelList dataKey="mentions" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
