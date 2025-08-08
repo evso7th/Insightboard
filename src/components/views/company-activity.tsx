@@ -103,17 +103,19 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-5">
             <div className="h-[400px] w-full md:col-span-3">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                  <Legend wrapperStyle={{fontSize: "12px"}}/>
-                  <Bar dataKey="demands" fill="hsl(var(--accent))" name="Спрос" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <ChartContainer config={chartConfig} className="h-full w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
+                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                    <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                    <Legend wrapperStyle={{fontSize: "12px"}}/>
+                    <Bar dataKey="demands" fill="hsl(var(--accent))" name="Спрос" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
             </div>
              <div className="h-[400px] md:col-span-2">
               <ScrollArea className="h-full">
