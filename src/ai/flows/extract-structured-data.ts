@@ -50,7 +50,7 @@ export async function extractStructuredData(input: ExtractStructuredDataInput): 
 const extractorPrompt = ai.definePrompt({
   name: 'extractStructuredDataPrompt',
   input: { schema: ExtractStructuredDataInputSchema },
-  output: { schema: ExtractStructuredDataOutputSchema },
+  output: { schema: ExtractStructuredDataOutputSchema, format: 'json' },
   prompt: `You are an expert data analyst tasked with parsing a raw text log from a chat group and converting it into structured data.
 Analyze the entire provided text. Identify every message that appears to be a job vacancy (спрос), a service offer (предложение), or an invitation (приглашение).
 For each such message, extract the relevant information and create a JSON object that conforms to the provided output schema.
@@ -92,14 +92,21 @@ const extractStructuredDataFlow = ai.defineFlow(
       throw new Error("AI failed to return structured data.");
     }
 
-    // Handle cases where the model returns a string representation of the JSON
     if (typeof output === 'string') {
         try {
-            output = JSON.parse(output);
+            // Clean the string before parsing
+            const cleanedString = output.replace(/^```json\s*|```\s*$/g, '');
+            output = JSON.parse(cleanedString);
         } catch (e) {
             console.error("Failed to parse string output from AI:", e);
             throw new Error("AI returned a malformed string. Could not parse as JSON.");
         }
+    }
+    
+    // Ensure the output has the expected structure
+    if (!output || !Array.isArray(output.extractedData)) {
+      console.error("Parsed output is not in the expected format:", output);
+      throw new Error("AI output format is incorrect after parsing.");
     }
     
     // Ensure line numbers are sequential
