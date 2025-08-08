@@ -424,13 +424,14 @@ const parseRate = (rate: any): number[] => {
 
     if (!/\d/.test(strRate)) return [];
 
+    // Handles ranges like 1000-2000 or 1000/2000
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
     return numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
 };
 
 export const getGeoAndRates = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { uniqueLocations: 0, validRatesCount: 0, averageRate: 0, geoSplit: [], rateData: [], boxPlotData: [] };
+  if (!data || data.length === 0) return { uniqueLocations: 0, validRatesCount: 0, averageRate: 0, allLocations: [], rateData: [], boxPlotData: [] };
 
   const allRates: number[] = [];
   const locationCounts: { [key: string]: number } = {};
@@ -462,16 +463,9 @@ export const getGeoAndRates = (data: MessageData[]) => {
 
   const averageRate = allRates.length > 0 ? allRates.reduce((a, b) => a + b, 0) / allRates.length : 0;
   
-  const sortedGeo = Object.entries(locationCounts)
+  const allLocations = Object.entries(locationCounts)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
-  
-  const top5Geo = sortedGeo.slice(0, 5);
-  const otherGeoCount = sortedGeo.slice(5).reduce((acc, curr) => acc + curr.value, 0);
-  const geoSplit = [...top5Geo];
-  if (otherGeoCount > 0) {
-    geoSplit.push({ name: 'Другие', value: otherGeoCount });
-  }
 
   const rateData = Object.entries(rateByRole).map(([role, data]) => {
     const rates = data.rates;
@@ -491,7 +485,7 @@ export const getGeoAndRates = (data: MessageData[]) => {
     uniqueLocations: Object.keys(locationCounts).length,
     validRatesCount: allRates.length,
     averageRate,
-    geoSplit,
+    allLocations,
     rateData,
     boxPlotData: rateData.filter(r => r.averageRate > 0).slice(0, 10),
   };

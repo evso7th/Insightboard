@@ -13,7 +13,7 @@ import { ScrollArea } from "../ui/scroll-area";
 
 
 export function GeoRatesView({ data }: { data: MessageData[] }) {
-  const { uniqueLocations, validRatesCount, averageRate, geoSplit, rateData, boxPlotData } = getGeoAndRates(data);
+  const { uniqueLocations, validRatesCount, averageRate, allLocations, rateData, boxPlotData } = getGeoAndRates(data);
 
   const aiInput = {
     dataSummary: `Найдено ${validRatesCount} валидных ставок. Средняя ставка: ${Math.round(averageRate)} руб/ч. Обнаружено ${uniqueLocations} уникальных локаций. Данные показывают распределение по географии и анализ ставок по ролям.`,
@@ -31,7 +31,6 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
     }
   };
   
-  const geoChartData = geoSplit.sort((a, b) => a.value - b.value);
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
@@ -44,28 +43,33 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
       <Card>
         <CardHeader>
           <CardTitle>Распределение по локациям</CardTitle>
-          <CardDescription>Топ-5 локаций, остальные сгруппированы в "Другие"</CardDescription>
+          <CardDescription>Все найденные уникальные локации</CardDescription>
         </CardHeader>
-        <CardContent className="h-[350px] w-full pl-2">
-          {geoChartData && geoChartData.length > 0 ? (
-            <ChartContainer config={chartConfig}>
-              <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={geoChartData} layout="vertical" margin={{ left: 100 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} width={100} interval={0}/>
-                    <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                    <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                    <Bar dataKey="value" name="Упоминания" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]}>
-                      <LabelList dataKey="value" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
-                    </Bar>
-                  </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+        <CardContent className="h-[350px] w-full">
+          {allLocations && allLocations.length > 0 ? (
+             <ScrollArea className="h-full">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Локация</TableHead>
+                    <TableHead className="text-right">Упоминания</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allLocations.map((loc) => (
+                    <TableRow key={loc.name}>
+                      <TableCell className="font-medium">{loc.name}</TableCell>
+                      <TableCell className="text-right">{loc.value}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           ) : (
             <div className="text-center text-muted-foreground flex items-center justify-center h-full">
               <div>
-                <BarChartIcon className="mx-auto h-12 w-12 mb-4" />
-                <p>Нет данных для отображения диаграммы.</p>
+                <Globe className="mx-auto h-12 w-12 mb-4" />
+                <p>Нет данных по локациям.</p>
               </div>
             </div>
           )}
