@@ -364,25 +364,29 @@ export const getCompanyDetail = (data: MessageData[], participantName: string, y
 
 // 4. Niche Expertise
 export const getNicheExpertise = (data: MessageData[]) => {
-   if (!data || data.length === 0) return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [], heatmapData: [] };
+  if (!data || data.length === 0) return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [] };
 
-  const niches: { [key: string]: { count: number; companies: Set<string>; contexts: string[], urgent: number } } = {};
+  const niches: { [key: string]: { count: number; companies: Set<string>; contexts: string[]; urgent: number } } = {};
   
   data.forEach(item => {
+    // Ensure the niche value is a non-empty string before processing
     const nicheValue = item['Ниша / уникальная экспертиза'];
-    if (nicheValue && String(nicheValue).trim()) {
-      const niche = String(nicheValue).trim();
+    if (nicheValue && typeof nicheValue === 'string' && nicheValue.trim()) {
+      const niche = nicheValue.trim();
       if (!niches[niche]) {
         niches[niche] = { count: 0, companies: new Set(), contexts: [], urgent: 0 };
       }
       niches[niche].count++;
-      if (item['Компания'] && String(item['Компания']).trim() !== '-') {
-        niches[niche].companies.add(String(item['Компания']).trim());
+      const companyValue = item['Компания'];
+      if (companyValue && typeof companyValue === 'string' && companyValue.trim() && companyValue.trim() !== '-') {
+        niches[niche].companies.add(companyValue.trim());
       }
-      if (item['Контекст']) {
-        niches[niche].contexts.push(item['Контекст']);
+      const contextValue = item['Контекст'];
+      if (contextValue && typeof contextValue === 'string' && contextValue.trim()) {
+        niches[niche].contexts.push(contextValue.trim());
       }
-      if (item['Срочность'] === 'urgent' || item['Срочность'] === 'immediate') {
+      const urgencyValue = item['Срочность'];
+      if (urgencyValue === 'urgent' || urgencyValue === 'immediate') {
           niches[niche].urgent++;
       }
     }
@@ -395,38 +399,18 @@ export const getNicheExpertise = (data: MessageData[]) => {
     contextExamples: data.contexts.slice(0, 2).join('; '),
   })).sort((a, b) => b.mentions - a.mentions);
   
+  if (nicheData.length === 0) {
+    return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [] };
+  }
+  
   const topNiche = nicheData[0]?.name || 'N/A';
   const urgentExpertise = Object.values(niches).reduce((sum, n) => sum + n.urgent, 0);
-
-  // Prepare data for the chart, limited to top 15 niches
-  const top15NicheNames = nicheData.slice(0, 15).map(n => n.name);
-  const filteredNiches = Object.entries(niches).filter(([name]) => top15NicheNames.includes(name));
-
-  const heatmapData = filteredNiches.flatMap(([niche, nicheData]) => {
-      // Create a map to count mentions per company for this niche
-      const companyMentions: { [key: string]: number } = {};
-      data.forEach(item => {
-        if (String(item['Ниша / уникальная экспертиза']).trim() === niche) {
-          const company = (item['Компания'] && String(item['Компания']).trim() !== '-') ? String(item['Компания']).trim() : 'N/A';
-          if (company !== 'N/A') {
-            companyMentions[company] = (companyMentions[company] || 0) + 1;
-          }
-        }
-      });
-
-      return Object.entries(companyMentions).map(([company, count]) => ({
-          niche,
-          company,
-          value: count
-      }));
-  });
 
   return {
     uniqueNiches: nicheData.length,
     topNiche,
     urgentExpertise,
     nicheData,
-    heatmapData,
   };
 };
 
