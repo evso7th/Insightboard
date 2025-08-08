@@ -245,8 +245,12 @@ export const getCompanyActivity = (data: MessageData[]) => {
         companies[companyName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthorReplacement };
       }
       
-      if (companies[companyName].isAuthor && !isAuthorReplacement) {
-          companies[companyName].isAuthor = false;
+      // If an entry for this name already exists and we now identify it as an author,
+      // it should be marked as an author, unless it was already definitively a company.
+      // The only time we are sure it's a company is if `originalCompany` was valid.
+      // This logic ensures that an author doesn't get accidentally overwritten by a role name.
+      if (isAuthorReplacement) {
+        companies[companyName].isAuthor = true;
       }
       
       const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
@@ -479,3 +483,4 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
