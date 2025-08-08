@@ -1,6 +1,6 @@
 
 'use client';
-import { Globe, RussianRuble, BarChart } from "lucide-react";
+import { Globe, RussianRuble, BarChart, PieChartIcon } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeoAndRates } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
@@ -63,19 +63,26 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
           <CardDescription>Топ-5 локаций, остальные сгруппированы в "Другие"</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px] w-full flex items-center justify-center pl-2">
-          <ChartContainer config={geoConfig}>
-            <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={<CustomPieLabel/>}>
-                    {geoSplit.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend wrapperStyle={{fontSize: "12px"}}/>
-                </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+          {geoSplit && geoSplit.length > 0 ? (
+            <ChartContainer config={geoConfig}>
+              <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip content={<ChartTooltipContent />} />
+                    <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={<CustomPieLabel/>}>
+                      {geoSplit.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Legend wrapperStyle={{fontSize: "12px"}}/>
+                  </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          ) : (
+            <div className="text-center text-muted-foreground">
+              <PieChartIcon className="mx-auto h-12 w-12 mb-4" />
+              <p>Нет данных для отображения диаграммы.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
       

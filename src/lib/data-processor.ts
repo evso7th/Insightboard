@@ -371,10 +371,10 @@ export const getNicheExpertise = (data: MessageData[]) => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
 
-    if (!nicheValue || String(nicheValue).trim() === '') {
+    if (!nicheValue || typeof nicheValue !== 'string' || nicheValue.trim() === '') {
         niche = '(Не указана)';
     } else {
-        niche = String(nicheValue).trim();
+        niche = nicheValue.trim();
     }
     
     if (!niches[niche]) {
@@ -405,10 +405,6 @@ export const getNicheExpertise = (data: MessageData[]) => {
     contextExamples: data.contexts.slice(0, 2).join('; '),
   })).sort((a, b) => b.mentions - a.mentions);
   
-  if (nicheData.length === 0) {
-    return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [] };
-  }
-  
   const topNiche = nicheData.find(n => n.name !== '(Не указана)')?.name || 'N/A';
   const urgentExpertise = Object.values(niches).reduce((sum, n) => sum + n.urgent, 0);
 
@@ -427,7 +423,7 @@ const parseRate = (rate: any): number[] => {
     const strRate = String(rate).replace(/ /g, '');
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/[^0-9]/g, ''), 10));
     
-    const validNumbers = numbers.filter(n => !isNaN(n) && n > 0 && n < 100000); // Filter out bad parses
+    const validNumbers = numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
     
     return validNumbers;
 }
@@ -531,8 +527,3 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks.filter(l => l.from && l.to),
   };
 };
-
-
-    
-
-    
