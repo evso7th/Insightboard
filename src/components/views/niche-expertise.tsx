@@ -10,6 +10,7 @@ import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
+import { useMemo } from "react";
 
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
@@ -27,11 +28,16 @@ const CustomTick = (props: any) => {
 };
 
 export function NicheExpertiseView({ data }: { data: MessageData[] }) {
-  const { uniqueNiches, topNiche, urgentExpertise, nicheData } = getNicheExpertise(data);
+  const { uniqueNiches, topNiche, urgentExpertise, nicheData } = useMemo(() => getNicheExpertise(data), [data]);
+
+  const unnamedNicheContext = useMemo(() => {
+    const unnamed = nicheData.find(n => n.name === '(Не указана)');
+    return unnamed ? unnamed.contextExamples : '';
+  }, [nicheData]);
 
   const aiInput = {
-    dataSummary: `Всего уникальных ниш: ${uniqueNiches}, Топ-1 ниша: ${topNiche}, Экспертиз с высокой срочностью: ${urgentExpertise}. Данные показывают, какие ниши наиболее упоминаемы, какие компании с ними связаны, и приводят примеры контекста.`,
-    viewDescription: "Это представление анализирует нишевую или уникальную экспертизу, упомянутую в данных. Оно помогает выявить трендовые специализации, компании, которые их ищут, и срочность, связанную с этими навыками."
+    dataSummary: `Всего уникальных ниш: ${uniqueNiches}, Топ-1 ниша: ${topNiche}, Экспертиз с высокой срочностью: ${urgentExpertise}. Есть большая категория ниш "(Не указана)", примеры контекста из которой: "${unnamedNicheContext}". Данные показывают, какие ниши наиболее упоминаемы.`,
+    viewDescription: "Это представление анализирует нишевую или уникальную экспертизу, упомянутую в данных. Оно помогает выявить трендовые специализации. Особое внимание уделяется категории '(Не указана)', чтобы понять ее содержание."
   };
   
   const chartData = nicheData.slice(0, 15).sort((a,b) => a.mentions - b.mentions);
@@ -46,7 +52,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
-        <KpiCard title="Число уникальных ниш" value={uniqueNiches} icon={BrainCircuit} />
+        <KpiCard title="Число уникальных ниш" value={uniqueNiches} icon={BrainCircuit} description="Без учета категории '(Не указана)'"/>
         <KpiCard title="Топ-1 ниша по частоте" value={topNiche} icon={Star} />
         <KpiCard title="Экспертиз с высокой срочностью" value={urgentExpertise} icon={Zap} />
       </div>

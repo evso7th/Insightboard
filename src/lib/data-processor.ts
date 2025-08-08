@@ -229,11 +229,8 @@ export const getCompanyActivity = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
 
   const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
-  
-  const excludedAuthors = ['QA'];
-  const filteredData = data.filter(d => !excludedAuthors.includes(d['Отправитель']));
 
-  filteredData.forEach(item => {
+  data.forEach(item => {
     const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
     const author = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
 
@@ -252,7 +249,6 @@ export const getCompanyActivity = (data: MessageData[]) => {
         participants[participantName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthor };
       }
       
-      // If we see a participant that was once an author but now has a company, it's a company.
       if (!isAuthor && participants[participantName].isAuthor) {
           participants[participantName].isAuthor = false;
       }
@@ -291,7 +287,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const topDemandingCompany = [...realCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
   const topOfferingAuthor = [...authorsAsCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingAuthor = [...authorsAsCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
-
+  
   const sortedCompaniesForChart = allParticipants
     .filter(p => !p.isAuthor)
     .sort((a, b) => b.offers - a.offers);
@@ -300,6 +296,10 @@ export const getCompanyActivity = (data: MessageData[]) => {
     .filter(p => p.isAuthor)
     .sort((a, b) => b.offers - a.offers);
 
+  const top20CompanyChart = [...sortedCompaniesForChart, ...sortedAuthorsForChart]
+    .slice(0, 20)
+    .sort((a,b) => b.offers - a.offers);
+
   return {
     topOfferingCompany,
     topDemandingCompany,
@@ -307,7 +307,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
     topDemandingAuthor,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
-    top20CompanyChart: [...sortedCompaniesForChart, ...sortedAuthorsForChart].slice(0, 20),
+    top20CompanyChart
   };
 };
 
@@ -369,26 +369,29 @@ export const getNicheExpertise = (data: MessageData[]) => {
   const niches: { [key: string]: { count: number; companies: Set<string>; contexts: string[]; urgent: number } } = {};
   
   data.forEach(item => {
-    // Ensure the niche value is a non-empty string before processing
     const nicheValue = item['Ниша / уникальная экспертиза'];
-    if (nicheValue && typeof nicheValue === 'string' && nicheValue.trim()) {
-      const niche = nicheValue.trim();
-      if (!niches[niche]) {
-        niches[niche] = { count: 0, companies: new Set(), contexts: [], urgent: 0 };
-      }
-      niches[niche].count++;
-      const companyValue = item['Компания'];
-      if (companyValue && typeof companyValue === 'string' && companyValue.trim() && companyValue.trim() !== '-') {
-        niches[niche].companies.add(companyValue.trim());
-      }
-      const contextValue = item['Контекст'];
-      if (contextValue && typeof contextValue === 'string' && contextValue.trim()) {
-        niches[niche].contexts.push(contextValue.trim());
-      }
-      const urgencyValue = item['Срочность'];
-      if (urgencyValue === 'urgent' || urgencyValue === 'immediate') {
-          niches[niche].urgent++;
-      }
+    const niche = (nicheValue && typeof nicheValue === 'string' && nicheValue.trim()) 
+      ? nicheValue.trim() 
+      : '(Не указана)';
+      
+    if (!niches[niche]) {
+      niches[niche] = { count: 0, companies: new Set(), contexts: [], urgent: 0 };
+    }
+    niches[niche].count++;
+    
+    const companyValue = item['Компания'];
+    if (companyValue && typeof companyValue === 'string' && companyValue.trim() && companyValue.trim() !== '-') {
+      niches[niche].companies.add(companyValue.trim());
+    }
+    
+    const contextValue = item['Контекст'];
+    if (contextValue && typeof contextValue === 'string' && contextValue.trim()) {
+      niches[niche].contexts.push(contextValue.trim());
+    }
+    
+    const urgencyValue = item['Срочность'];
+    if (urgencyValue === 'urgent' || urgencyValue === 'immediate') {
+        niches[niche].urgent++;
     }
   });
   
@@ -403,11 +406,11 @@ export const getNicheExpertise = (data: MessageData[]) => {
     return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [] };
   }
   
-  const topNiche = nicheData[0]?.name || 'N/A';
+  const topNiche = nicheData.find(n => n.name !== '(Не указана)')?.name || 'N/A';
   const urgentExpertise = Object.values(niches).reduce((sum, n) => sum + n.urgent, 0);
 
   return {
-    uniqueNiches: nicheData.length,
+    uniqueNiches: nicheData.filter(n => n.name !== '(Не указана)').length,
     topNiche,
     urgentExpertise,
     nicheData,
