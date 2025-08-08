@@ -492,18 +492,17 @@ export const getGeoAndRates = (data: MessageData[]) => {
 export const getInvitationNetwork = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
   
-  const invitationEvents = data.filter(item => item['Тип события'] === 'приглашение');
-
-  const invitationLinks = invitationEvents
+  const invitationLinks = data
     .map(item => {
       const from = item['Отправитель'];
-      const to = item['Связь (from → to)']; // This field should now contain the name of the invited person
+      const to = item['Связь (from → to)'];
 
-      if (!from || !to) {
+      // We need both 'from' and 'to' to count an invitation
+      if (!from || !to || String(to).trim() === '') {
         return null;
       }
       
-      return { from: from.trim(), to: String(to).trim(), date: item['Дата'] };
+      return { from: String(from).trim(), to: String(to).trim(), date: item['Дата'] };
     })
     .filter((link): link is NonNullable<typeof link> => link !== null);
 
@@ -513,7 +512,7 @@ export const getInvitationNetwork = (data: MessageData[]) => {
 
   const inviterCounts = countBy(invitationLinks, 'from');
   const topInviter = Object.keys(inviterCounts).length > 0
-    ? Object.keys(inviterCounts).reduce((a, b) => inviterCounts[a] > inviterCounts[b] ? a : b, 'N/A')
+    ? Object.entries(inviterCounts).reduce((a, b) => a[1] > b[1] ? a : b)[0]
     : 'N/A';
 
   const totalParticipants = new Set(data.map(d => d['Отправитель']).filter(Boolean)).size;
@@ -526,11 +525,11 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     .sort((a,b) => a.count - b.count);
 
   return {
-    topInviter,
+    topInviter: topInviter.charAt(0).toUpperCase() + topInviter.slice(1), // Capitalize first letter
     totalInvitations: invitationLinks.length,
     averageInvitations,
     networkData: invitationLinks,
     topInvitersChartData
   };
 };
-
+    
