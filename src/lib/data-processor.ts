@@ -49,51 +49,51 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
     };
   }
 
-  // Calculate participant counts on the full dataset, before any filtering
   const participantActivity = countBy(data, 'Отправитель');
   const participantsWithCounts = Object.entries(participantActivity)
     .map(([name, count]) => ({ name, count: count as number }))
     .sort((a, b) => b.count - a.count);
   const top10Participants = participantsWithCounts.slice(0, 10);
 
-  // Filter data based on selection
   const filteredData = selectedParticipant 
     ? data.filter(d => d['Отправитель'] === selectedParticipant)
     : data;
 
-  // Calculate KPIs for the filtered data
   const counts = countBy(filteredData, 'Тип события');
 
-  // Calculate activity by date for the filtered data
-  const activityByDateCounts = filteredData.reduce((acc: { [key: string]: number }, item) => {
-    const dateStr = item['Дата'];
-    if (dateStr) {
-      acc[dateStr] = (acc[dateStr] || 0) + 1;
-    }
+  // Convert date strings to Date objects and filter invalid ones
+  const datedData = filteredData
+    .map(item => ({ ...item, dateObj: parseDate(item['Дата']) }))
+    .filter(item => item.dateObj !== null);
+
+  const activityByDateCounts = datedData.reduce((acc: { [key: string]: number }, item) => {
+    // Use toLocaleDateString to get a consistent key like "DD.MM.YYYY"
+    const dateKey = item.dateObj!.toLocaleDateString('ru-RU');
+    acc[dateKey] = (acc[dateKey] || 0) + 1;
     return acc;
   }, {});
-  
+
   const activityByDate = Object.entries(activityByDateCounts)
-    .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
-    .filter(item => item.dateObj !== null)
+    .map(([date, count]) => ({
+      date,
+      count,
+      dateObj: parseDate(date),
+    }))
+    .filter(item => item.dateObj !== null) // Ensure date is valid after re-parsing
     .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime());
+
 
   return {
     totalEvents: filteredData.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
     invitations: counts['приглашение'] || 0,
-    participantsWithCounts, // This should contain all participants for the dropdown
-    top10Participants, // This is static based on all data
+    participantsWithCounts,
+    top10Participants,
     activityByDate,
-    latestEvents: filteredData.sort((a,b) => {
-        const dateA = parseDate(a['Дата']);
-        const dateB = parseDate(b['Дата']);
-        if (dateA && dateB) {
-            return dateB.getTime() - dateA.getTime();
-        }
-        return 0;
-    }).slice(0, 20),
+    latestEvents: datedData
+      .sort((a, b) => b.dateObj!.getTime() - a.dateObj!.getTime())
+      .slice(0, 20),
   };
 };
 
@@ -302,5 +302,6 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
 
 
