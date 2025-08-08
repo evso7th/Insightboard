@@ -4,9 +4,10 @@ import type { MessageData } from '@/types';
 // Helper to count occurrences
 const countBy = (data: any[], key: string) => {
   return data.reduce((acc: {[key: string]: number}, item) => {
-    const value = item[key];
+    const value = item[key as keyof typeof item];
     if (value) {
-      acc[value] = (acc[value] || 0) + 1;
+      const aValue = String(value).trim().toLowerCase();
+      acc[aValue] = (acc[aValue] || 0) + 1;
     }
     return acc;
   }, {});
@@ -53,7 +54,14 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
     };
   }
   
-  const participantActivity = countBy(data, 'Отправитель');
+  const participantActivity = data.reduce((acc: {[key: string]: number}, item) => {
+    const value = item['Отправитель'];
+    if (value) {
+      acc[value] = (acc[value] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
   const participantsWithCounts = Object.entries(participantActivity)
     .map(([name, count]) => ({ name, count: count as number }))
     .sort((a, b) => b.count - a.count);
@@ -251,7 +259,12 @@ export const getGeoAndRates = (data: MessageData[]) => {
   const averageRate = validRates.length > 0 ? validRates.reduce((a, b) => a + b, 0) / validRates.length : 0;
   const maxRate = validRates.length > 0 ? Math.max(...validRates) : 0;
 
-  const geoCounts = countBy(data.filter(d => d['Гео / локация']), 'Гео / локация');
+  const geoCounts = data.filter(d => d['Гео / локация']).reduce((acc: { [key: string]: number }, item) => {
+    const value = item['Гео / локация']!;
+    acc[value] = (acc[value] || 0) + 1;
+    return acc;
+  }, {});
+
   const totalGeo = Object.values(geoCounts).reduce((a: number, b: any) => a + b, 0);
   const rfShare = totalGeo > 0 ? ((geoCounts['РФ'] || 0) / totalGeo) * 100 : 0;
 
@@ -316,3 +329,5 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
+    

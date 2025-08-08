@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { BarChart, Briefcase, Users } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeneralActivityMetrics, getParticipantMetrics } from "@/lib/data-processor";
@@ -16,30 +16,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
 
-  // Calculate metrics that don't depend on selection
-  const { participantsWithCounts, top10Participants: initialTop10 } = getGeneralActivityMetrics(data);
+  const { participantsWithCounts } = useMemo(() => getGeneralActivityMetrics(data), [data]);
 
-  // Filter data based on selection
-  const filteredData = selectedParticipant
-    ? data.filter(d => d['Отправитель'] === selectedParticipant)
-    : data;
-  
-  // Calculate metrics based on filtered data
   const {
     totalEvents,
     offers,
     demands,
     activityByDate,
-    latestEvents
-  } = getParticipantMetrics(filteredData);
-  
-  const chartData = activityByDate;
+    latestEvents,
+    top10Participants
+  } = useMemo(() => {
+    const filtered = selectedParticipant
+      ? data.filter(d => d['Отправитель'] === selectedParticipant)
+      : data;
+    
+    const metrics = getParticipantMetrics(filtered);
+    
+    const top10 = getGeneralActivityMetrics(filtered).top10Participants;
 
+    return {
+      ...metrics,
+      top10Participants: top10,
+    };
+  }, [data, selectedParticipant]);
+  
   const aiInput = {
     dataSummary: `Статистика для ${selectedParticipant || 'всех участников'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
     viewDescription: `Это общая сводка по активности для ${selectedParticipant || 'всех участников'}. Здесь показаны общие количества различных типов событий и визуализирована динамика активности по времени.`
   };
-  
+
   const chartConfig = {
     count: {
       label: "События",
@@ -51,8 +56,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     setSelectedParticipant(value === 'all' ? null : value);
   };
   
-  const top10ToDisplay = selectedParticipant ? getGeneralActivityMetrics(filteredData).top10Participants : initialTop10;
-
   return (
     <div className="flex flex-col gap-4 md:gap-8">
       {/* KPI cards and participant selector */}
@@ -86,13 +89,13 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       </div>
       
       {/* Chart Container */}
-       <Card>
+      <Card>
         <CardHeader>
           <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig} className="h-full w-full">
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <LineChart data={activityByDate} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
@@ -106,7 +109,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </CardContent>
       </Card>
       
-      {/* Tables and AI Insight */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <div className="lg:col-span-1">
           <Card>
@@ -123,7 +125,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {top10ToDisplay.map((p) => (
+                    {top10Participants.map((p) => (
                       <TableRow key={p.name}>
                         <TableCell className="font-medium">{p.name}</TableCell>
                         <TableCell className="text-right">{p.count}</TableCell>
@@ -174,3 +176,5 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    
