@@ -371,10 +371,10 @@ export const getNicheExpertise = (data: MessageData[]) => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
 
-    if (!nicheValue || typeof nicheValue !== 'string' || nicheValue.trim() === '') {
+    if (nicheValue === undefined || nicheValue === null || String(nicheValue).trim() === '') {
         niche = '(Не указана)';
     } else {
-        niche = nicheValue.trim();
+        niche = String(nicheValue).trim();
     }
       
     if (!niches[niche]) {
@@ -501,3 +501,6 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
+
+    
