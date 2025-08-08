@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { Building, Users, Briefcase } from "lucide-react";
+import { Building, Users, Briefcase, ArrowLeft } from "lucide-react";
 import { getCompanyActivity, getCompanyDetail } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
@@ -11,13 +11,11 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContaine
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from '../ui/button';
-import { ArrowLeft } from 'lucide-react';
 
 const CustomTick = (props: any) => {
   const { x, y, payload, data } = props;
   const item = data.find((d: any) => d.name === payload.value);
   const isCompany = item && !item.isAuthor;
-
   const label = payload.value;
   const truncatedLabel = label.length > 20 ? `${label.substring(0, 18)}...` : label;
   
@@ -44,7 +42,6 @@ const XAxisRoleTick = (props: any) => {
         </g>
     );
 };
-
 
 export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
@@ -148,7 +145,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         </div>
          <AIInsight input={aiInput} />
       </div>
-    )
+    );
   }
 
   return (
