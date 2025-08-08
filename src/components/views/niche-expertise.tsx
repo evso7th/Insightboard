@@ -15,13 +15,12 @@ import { ScrollArea } from "../ui/scroll-area";
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
   const label = payload.value;
-  const truncatedLabel = label.length > 25 ? `${''}${label.substring(0, 23)}...` : label;
   
   return (
      <g transform={`translate(${x},${y})`}>
       <title>{label}</title>
       <text x={0} y={0} dy={4} textAnchor="end" fill="hsl(var(--muted-foreground))" fontSize={12}>
-        {truncatedLabel}
+        {label}
       </text>
     </g>
   );
@@ -41,7 +40,6 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   };
   
   const chartData = nicheData
-    .filter(n => n.name !== '(Не указана)')
     .slice(0, 15)
     .sort((a,b) => a.mentions - b.mentions);
 
