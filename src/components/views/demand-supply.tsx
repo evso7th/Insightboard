@@ -84,7 +84,7 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
           {selectedRole ? (
-             <ChartContainer config={chartConfig}>
+             <ChartContainer config={chartConfig} className="h-full w-full">
               <LineChart data={roleYearlyData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false}/>
                 <XAxis dataKey="year" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
@@ -96,7 +96,7 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
               </LineChart>
             </ChartContainer>
           ) : (
-            <ChartContainer config={chartConfig}>
+            <ChartContainer config={chartConfig} className="h-full w-full">
               <BarChart data={top10RolesChart} margin={{ top: 5, right: 20, left: 10, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
