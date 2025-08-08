@@ -228,46 +228,46 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 export const getCompanyActivity = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
   
-  const companies: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
+  const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
 
   data.forEach(item => {
     const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
-    let isAuthorReplacement = false;
-    let companyName = originalCompany;
+    const author = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
 
-    if (!companyName || companyName === '-' || companyName.toLowerCase() === 'n/a' || companyName.toLowerCase() === 'na') {
-      companyName = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
-      isAuthorReplacement = true;
+    let participantName = originalCompany;
+    let isAuthor = false;
+
+    if (!participantName || participantName === '-' || participantName.toLowerCase() === 'n/a' || participantName.toLowerCase() === 'na') {
+      participantName = author;
+      isAuthor = true;
     }
 
-    if (companyName) {
-      if (!companies[companyName]) {
-        companies[companyName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthorReplacement };
+    if (participantName) {
+      if (!participants[participantName]) {
+        participants[participantName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthor };
       }
       
-      // If an entry for this name already exists and we now identify it as an author,
-      // it should be marked as an author, unless it was already definitively a company.
-      // The only time we are sure it's a company is if `originalCompany` was valid.
-      // This logic ensures that an author doesn't get accidentally overwritten by a role name.
-      if (isAuthorReplacement) {
-        companies[companyName].isAuthor = true;
+      // If we see a participant that was previously an author now has a company,
+      // we mark them as not an author. Company takes precedence.
+      if (!isAuthor && participants[participantName].isAuthor) {
+          participants[participantName].isAuthor = false;
       }
       
       const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
       if (eventType === 'предложение') {
-        companies[companyName].offers++;
+        participants[participantName].offers++;
       } else if (eventType === 'спрос') {
-        companies[companyName].demands++;
+        participants[participantName].demands++;
       }
       
       const roleList = processRoles(item['Роль']);
       roleList.forEach(role => {
-        if(role) companies[companyName].roles.add(role)
+        if(role) participants[participantName].roles.add(role)
       });
     }
   });
 
-  const allParticipants = Object.entries(companies).map(([name, data]) => ({
+  const allParticipants = Object.entries(participants).map(([name, data]) => ({
     name,
     offers: data.offers,
     demands: data.demands,
@@ -285,12 +285,13 @@ export const getCompanyActivity = (data: MessageData[]) => {
   
   const topOfferingCompany = [...realCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingCompany = [...realCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
-  
   const topOfferingAuthor = [...authorsAsCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingAuthor = [...authorsAsCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
 
-  const chartCompanies = allParticipants.filter(p => !p.isAuthor).sort((a,b) => b.offers - a.offers);
-  const chartAuthors = allParticipants.filter(p => p.isAuthor).sort((a,b) => b.offers - a.offers);
+  const sortedForChart = [
+      ...realCompanies.sort((a, b) => b.offers - a.offers),
+      ...authorsAsCompanies.sort((a, b) => b.offers - a.offers)
+  ];
 
   return {
     topOfferingCompany,
@@ -299,7 +300,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
     topDemandingAuthor,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
-    top20CompanyChart: [...chartCompanies, ...chartAuthors].slice(0, 20),
+    top20CompanyChart: sortedForChart.slice(0, 20),
   };
 };
 
