@@ -1,7 +1,7 @@
 
 'use client';
 import { useState } from 'react';
-import { BarChart, Briefcase, Calendar, Users } from "lucide-react";
+import { BarChart, Briefcase, Users } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeneralActivityMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
