@@ -13,6 +13,22 @@ import { ScrollArea } from "../ui/scroll-area";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
+const CustomPieLabel = (props: any) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, percent, name } = props;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+    
+    if (percent < 0.05) return null; // Don't render label for small slices
+
+    return (
+        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} className="pointer-events-none">
+            <tspan x={x} dy="-0.5em">{name}</tspan>
+            <tspan x={x} dy="1.2em">{`${(percent * 100).toFixed(0)}%`}</tspan>
+        </text>
+    );
+};
+
 export function GeoRatesView({ data }: { data: MessageData[] }) {
   const { uniqueLocations, validRatesCount, averageRate, geoSplit, rateData, boxPlotData } = getGeoAndRates(data);
 
@@ -51,17 +67,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                      const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-                      const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-                      if (percent < 0.05) return null; // Don't render label for small slices
-                      return (
-                        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
-                          {`${(percent * 100).toFixed(0)}%`}
-                        </text>
-                      );
-                    }}>
+                  <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={<CustomPieLabel/>}>
                     {geoSplit.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -80,14 +86,14 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
         <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
-                    <ReBarChart data={boxPlotData} margin={{ top: 5, right: 30, left: 10, bottom: 70 }}>
+                    <ReBarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 70 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
                         <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={['dataMin - 1000', 'auto']} />
                         <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
                         <Legend wrapperStyle={{fontSize: "12px"}} />
                         <Bar dataKey="averageRate" fill="hsl(var(--chart-2))" name="Сред. ставка" radius={[4, 4, 0, 0]}>
-                            <LabelList dataKey="averageRate" position="top" offset={5} fontSize={10} fill="hsl(var(--foreground))" />
+                            <LabelList dataKey="averageRate" position="top" offset={5} fontSize={10} fill="hsl(var(--foreground))" formatter={(value: number) => value.toLocaleString()} />
                         </Bar>
                     </ReBarChart>
                 </ResponsiveContainer>

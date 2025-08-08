@@ -422,25 +422,13 @@ export const getNicheExpertise = (data: MessageData[]) => {
 
 // 5. Geography and Rates
 const parseRate = (rate: any): number[] => {
-    if (rate === null || rate === undefined) return [];
+    if (rate === null || rate === undefined || typeof rate === 'boolean') return [];
 
     const strRate = String(rate).replace(/ /g, '');
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/[^0-9]/g, ''), 10));
     
-    const validNumbers = numbers.filter(n => !isNaN(n) && n > 0);
-
-    // Handle cases like "16002500" which might be "1600-2500" but without a separator
-    if (validNumbers.length === 1 && validNumbers[0] > 1000000) {
-      const numStr = String(validNumbers[0]);
-      if (numStr.length === 8) { // Heuristic for something like 16002500
-        const first = parseInt(numStr.substring(0, 4), 10);
-        const second = parseInt(numStr.substring(4), 10);
-        if(!isNaN(first) && !isNaN(second)) {
-            return [first, second];
-        }
-      }
-    }
-
+    const validNumbers = numbers.filter(n => !isNaN(n) && n > 0 && n < 100000); // Filter out bad parses
+    
     return validNumbers;
 }
 
@@ -467,11 +455,12 @@ export const getGeoAndRates = (data: MessageData[]) => {
       
       const roleList = processRoles(item['Роль']);
       roleList.forEach(role => {
+          if (!role) return;
           if (!rateByRole[role]) {
               rateByRole[role] = { rates: [], geos: new Set() };
           }
           rateByRole[role].rates.push(...rates);
-          if (location) rateByRole[role].geos.add(String(location).trim());
+          if (location && String(location).trim()) rateByRole[role].geos.add(String(location).trim());
       })
     }
   });
@@ -522,7 +511,8 @@ export const getInvitationNetwork = (data: MessageData[]) => {
   const invitations = data.filter(item => item['Тип события'] === 'приглашение' && item['Связь (from → to)']);
 
   const invitationLinks = invitations.map(item => {
-    const [from, to] = item['Связь (from → to)'].split('->').map(s => s.trim());
+    const fromTo = String(item['Связь (from → to)']);
+    const [from, to] = fromTo.includes('->') ? fromTo.split('->').map(s => s.trim()) : [fromTo, ''];
     return { from, to, date: item['Дата'] };
   });
 
@@ -538,7 +528,7 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     topInviter,
     totalInvitations: invitations.length,
     averageInvitations,
-    networkData: invitationLinks,
+    networkData: invitationLinks.filter(l => l.from && l.to),
   };
 };
 
