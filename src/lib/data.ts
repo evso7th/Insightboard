@@ -1,7 +1,10 @@
+
+'use server'
 import type { MessageData } from '@/types';
 import fs from 'fs';
 import path from 'path';
 import * as XLSX from 'xlsx';
+import { extractStructuredData } from '@/ai/flows/extract-structured-data';
 
 // Helper to format date object to DD.MM.YYYY string
 const formatDate = (date: Date) => {
@@ -49,3 +52,24 @@ export const loadSampleData = (): MessageData[] => {
     return [];
   }
 };
+
+export async function processChatlog(): Promise<{ data?: MessageData[], error?: string }> {
+    try {
+        const txtFilePath = path.join(process.cwd(), 'chatlog.txt');
+        const textContent = fs.readFileSync(txtFilePath, 'utf-8');
+        
+        if (!textContent) {
+            return { error: 'chatlog.txt is empty or could not be read.' };
+        }
+
+        const result = await extractStructuredData({ rawText: textContent });
+        return { data: result.extractedData };
+
+    } catch (error: any) {
+        console.error("Error reading or processing 'chatlog.txt':", error);
+        if (error.code === 'ENOENT') {
+             return { error: 'File chatlog.txt not found in the project root.' };
+        }
+        return { error: `An error occurred: ${error.message}` };
+    }
+}
