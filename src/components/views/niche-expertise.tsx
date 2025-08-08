@@ -15,7 +15,7 @@ import { useMemo } from "react";
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
   const label = payload.value;
-  const truncatedLabel = label.length > 25 ? `${label.substring(0, 23)}...` : label;
+  const truncatedLabel = label.length > 25 ? `${''}${label.substring(0, 23)}...` : label;
   
   return (
      <g transform={`translate(${x},${y})`}>
