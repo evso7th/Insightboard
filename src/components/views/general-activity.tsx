@@ -21,9 +21,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     offers,
     demands,
     activityByDate,
-    latestEvents,
     participantsWithCounts,
-    top10Participants
   } = getGeneralActivityMetrics(data, selectedParticipant);
 
   const chartData = activityByDate;
@@ -77,27 +75,25 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       </div>
       
       {/* Chart Container */}
-      <div>
-         <Card>
-          <CardHeader>
-            <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[350px] w-full pl-2">
-            <ChartContainer config={chartConfig}>
-              <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
-                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip
-                  content={<ChartTooltipContent indicator="dot" />}
-                  cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
-                />
-                <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[350px] w-full pl-2">
+          <ChartContainer config={chartConfig} className="h-full w-full">
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <Tooltip
+                content={<ChartTooltipContent indicator="dot" />}
+                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
+              />
+              <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
+            </LineChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
       
       {/*
       
