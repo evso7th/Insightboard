@@ -245,7 +245,6 @@ export const getCompanyActivity = (data: MessageData[]) => {
         companies[companyName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthorReplacement };
       }
       
-      // If a real company name appeared later for an author, mark it as not an author replacement.
       if (companies[companyName].isAuthor && !isAuthorReplacement) {
           companies[companyName].isAuthor = false;
       }
@@ -272,20 +271,26 @@ export const getCompanyActivity = (data: MessageData[]) => {
     isAuthor: data.isAuthor,
   }));
   
-  const realCompanies = allParticipants.filter(p => !p.isAuthor).sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
-  const authorsAsCompanies = allParticipants.filter(p => p.isAuthor).sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
+  const realCompanies = allParticipants.filter(p => !p.isAuthor);
+  const authorsAsCompanies = allParticipants.filter(p => p.isAuthor);
   
-  const companyData = [...realCompanies, ...authorsAsCompanies];
+  realCompanies.sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
+  authorsAsCompanies.sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
 
-  const topOfferingCompany = [...companyData].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
-  const topDemandingCompany = [...companyData].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
+  const companyData = [...realCompanies, ...authorsAsCompanies];
+  
+  const topOfferingCompany = [...realCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
+  const topDemandingCompany = [...realCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
+
+  const chartCompanies = allParticipants.filter(p => !p.isAuthor).sort((a,b) => b.offers - a.offers);
+  const chartAuthors = allParticipants.filter(p => p.isAuthor).sort((a,b) => b.offers - a.offers);
 
   return {
     topOfferingCompany,
     topDemandingCompany,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
-    top20CompanyChart: [...companyData].sort((a,b) => b.offers - a.offers).slice(0, 20),
+    top20CompanyChart: [...chartCompanies, ...chartAuthors].slice(0, 20),
   };
 };
 

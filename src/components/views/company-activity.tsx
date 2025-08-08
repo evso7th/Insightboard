@@ -90,7 +90,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle>Детализация по участнику: {selectedParticipant}</CardTitle>
+                <CardTitle>Детализация по компании: {selectedParticipant}</CardTitle>
                 <CardDescription>Спрос и предложение по ролям за {selectedYear || 'все время'}</CardDescription>
               </div>
                <div className="flex items-center gap-2 flex-wrap">
@@ -186,7 +186,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Участник</TableHead>
+                  <TableHead>Компания</TableHead>
                   <TableHead>Предложения</TableHead>
                   <TableHead>Спрос</TableHead>
                   <TableHead>Уник. роли</TableHead>
