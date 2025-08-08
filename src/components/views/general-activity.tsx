@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { BarChart, Briefcase, Users } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
-import { getGeneralActivityMetrics, getParticipantMetrics, TimeRange } from "@/lib/data-processor";
+import { getGeneralActivityMetrics, getParticipantMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
@@ -12,23 +12,11 @@ import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { parse } from 'date-fns';
-
-const TIME_RANGES: { value: TimeRange, label: string }[] = [
-  { value: 'all', label: 'Все время' },
-  { value: 'year', label: 'Год' },
-  { value: 'month', label: 'Месяц' },
-  { value: 'week', label: 'Неделя' },
-];
-
-const timeRangeMap: TimeRange[] = ['all', 'year', 'month', 'week'];
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
-  const { participantsWithCounts, top10Participants, totalEvents: allEvents, latestDate } = useMemo(() => {
+  const { participantsWithCounts, top10Participants, totalEvents: allEvents } = useMemo(() => {
     return getGeneralActivityMetrics(data);
   }, [data]);
   
@@ -43,8 +31,8 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       ? data.filter(d => d['Отправитель'] === selectedParticipant)
       : data;
       
-    return getParticipantMetrics(filteredData, timeRange, latestDate);
-  }, [data, selectedParticipant, timeRange, latestDate]);
+    return getParticipantMetrics(filteredData);
+  }, [data, selectedParticipant]);
   
   const aiInput = {
     dataSummary: `Статистика для ${selectedParticipant || 'всех участников'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
@@ -61,12 +49,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const handleParticipantChange = (value: string | null) => {
     setSelectedParticipant(value === 'all' ? null : value);
   };
-  
-  const handleSliderChange = (value: number[]) => {
-    setTimeRange(timeRangeMap[value[0]]);
-  }
-
-  const currentTimeRangeIndex = useMemo(() => timeRangeMap.indexOf(timeRange), [timeRange]);
   
   return (
     <div className="flex flex-col gap-4 md:gap-8">
@@ -117,27 +99,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                 <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
               </LineChart>
             </ChartContainer>
-          </CardContent>
-           <CardContent className="pt-4 flex items-center gap-4">
-            <Slider
-              value={[currentTimeRangeIndex]}
-              min={0}
-              max={TIME_RANGES.length - 1}
-              step={1}
-              onValueChange={handleSliderChange}
-              className="w-1/2 mx-auto"
-            />
-            <div className="flex w-1/2 justify-between text-xs text-muted-foreground">
-              {TIME_RANGES.map((range, index) => (
-                <span 
-                  key={range.value} 
-                  className={`cursor-pointer ${currentTimeRangeIndex === index ? 'font-bold text-foreground' : ''}`}
-                  onClick={() => setTimeRange(range.value)}
-                >
-                  {range.label}
-                </span>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </div>
