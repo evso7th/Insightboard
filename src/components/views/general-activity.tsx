@@ -6,7 +6,7 @@ import { getGeneralActivityMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ChartContainer, ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
@@ -74,7 +74,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
               </TableHeader>
               <TableBody>
                 {latestEvents.map((event, index) => (
-                  <TableRow key={`${event['№ стр.']}-${index}`}>
+                  <TableRow key={index}>
                     <TableCell>{event['Дата']}</TableCell>
                     <TableCell>{event['Отправитель']}</TableCell>
                     <TableCell>{event['Тип события']}</TableCell>
