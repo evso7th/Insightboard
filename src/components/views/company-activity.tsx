@@ -1,3 +1,4 @@
+
 'use client';
 import { Building, Users, Briefcase } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
@@ -5,7 +6,7 @@ import { getCompanyActivity } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
@@ -16,6 +17,13 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const aiInput = {
     dataSummary: `Top offering company: ${topOfferingCompany}, Top demanding company: ${topDemandingCompany}, Total company mentions: ${totalMentions}. The chart and table show offers, demands, and unique roles per company.`,
     viewDescription: "This view focuses on the activity of different companies in the dataset. It identifies the top companies for offering positions and for seeking talent, and provides a breakdown of their activity levels."
+  };
+
+  const chartConfig = {
+    offers: {
+      label: "Предложения",
+      color: "hsl(var(--primary))",
+    },
   };
 
   return (
@@ -31,7 +39,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           <CardTitle>ТОП-10 компаний по числу предложений</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig}>
             <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
@@ -41,7 +49,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                  <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
 

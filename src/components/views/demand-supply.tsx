@@ -1,3 +1,4 @@
+
 'use client';
 import { Briefcase, Users, Scale } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
@@ -18,6 +19,17 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
     viewDescription: "This view analyzes the job market by comparing demand (requests for roles) versus supply (offers for roles). It highlights which roles are most sought after and which are most available, showing the balance for each."
   };
 
+  const chartConfig = {
+    demand: {
+      label: "Спрос",
+      color: "hsl(var(--primary))",
+    },
+    supply: {
+      label: "Предложение",
+      color: "hsl(var(--accent))",
+    },
+  };
+
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
@@ -31,7 +43,7 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
           <CardTitle>Спрос и предложение по ТОП-10 ролям</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig}>
             <BarChart data={top10RolesChart} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
@@ -41,7 +53,7 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
               <Bar dataKey="demand" fill="hsl(var(--primary))" name="Спрос" radius={[4, 4, 0, 0]} />
               <Bar dataKey="supply" fill="hsl(var(--accent))" name="Предложение" radius={[4, 4, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
 

@@ -1,3 +1,4 @@
+
 'use client';
 import { BarChart, Briefcase, Calendar, Users } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
@@ -5,7 +6,7 @@ import { getGeneralActivityMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
@@ -18,6 +19,13 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const aiInput = {
     dataSummary: `Total events: ${totalEvents}, Offers: ${offers}, Demands: ${demands}, Invitations: ${invitations}. Activity trends show counts of events per day. Recent events are listed.`,
     viewDescription: "This is a high-level overview of all recorded activities. It shows total counts of different event types, identifies the most active participant, and visualizes the timeline of events."
+  };
+
+  const chartConfig = {
+    count: {
+      label: "События",
+      color: "hsl(var(--primary))",
+    },
   };
 
   return (
@@ -34,7 +42,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
           <CardTitle>Активность по дням</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig}>
             <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
@@ -45,7 +53,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
               />
               <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
 

@@ -1,3 +1,4 @@
+
 'use client';
 import { Globe, RussianRuble,TrendingUp } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
@@ -5,7 +6,7 @@ import { getGeoAndRates } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Pie, PieChart, Tooltip, ResponsiveContainer, Cell, Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
@@ -20,6 +21,30 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
     viewDescription: "This view analyzes the geographical distribution of activities and the associated pay rates. It highlights the proportion of domestic versus international activities and provides a breakdown of salary rates by role."
   };
 
+  const chartConfig = {
+    value: {
+      label: "Count",
+    },
+    minRate: {
+      label: "Мин. ставка",
+      color: "hsl(var(--chart-4))",
+    },
+    averageRate: {
+      label: "Сред. ставка",
+      color: "hsl(var(--chart-2))",
+    },
+    maxRate: {
+      label: "Макс. ставка",
+      color: "hsl(var(--chart-5))",
+    },
+  };
+  
+  const geoConfig = {
+    РФ: { label: 'РФ' },
+    'вне РФ': { label: 'вне РФ' },
+    удаленно: { label: 'Удаленно' },
+  }
+
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
@@ -33,7 +58,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
           <CardTitle>Доля по гео</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] w-full flex items-center justify-center">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={geoConfig}>
             <PieChart>
               <Tooltip content={<ChartTooltipContent />} />
               <Pie data={geoSplit} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
@@ -52,7 +77,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
               </Pie>
               <Legend wrapperStyle={{fontSize: "12px"}}/>
             </PieChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
       
@@ -61,7 +86,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
           <CardTitle>Ставки по ролям (Мин/Сред/Макс)</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartContainer config={chartConfig}>
                 <BarChart data={boxPlotData} margin={{ top: 5, right: 20, left: -10, bottom: 50 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
@@ -72,7 +97,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
                     <Bar dataKey="averageRate" stackId="a" fill="hsl(var(--chart-2))" name="Сред. ставка" />
                     <Bar dataKey="maxRate" stackId="a" fill="hsl(var(--chart-5))" name="Макс. ставка" radius={[4, 4, 0, 0]} />
                 </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
       </Card>
 

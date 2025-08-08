@@ -1,3 +1,4 @@
+
 'use client';
 import { BrainCircuit, Star, Zap } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
@@ -5,7 +6,7 @@ import { getNicheExpertise } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
@@ -21,6 +22,12 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   const companies = Array.from(new Set(heatmapData.map(d => d.company)));
   const nichesForChart = Array.from(new Set(heatmapData.map(d => d.niche)));
 
+  const chartConfig = {
+    mentions: {
+      label: "Mentions",
+    },
+  };
+
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-3 xl:col-span-3">
@@ -34,7 +41,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
           <CardTitle>Карта упоминаний: Ниша × Компания</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 40, left: 60 }}>
               <CartesianGrid />
               <XAxis type="category" dataKey="company" name="Company"
@@ -51,7 +58,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
               <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<ChartTooltipContent />} />
               <Scatter name="Mentions" data={heatmapData} fill="hsl(var(--primary))" shape="circle" />
             </ScatterChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
 
