@@ -32,7 +32,10 @@ export const loadSampleData = (): MessageData[] => {
             if (typedKey === 'Дата' && typeof value === 'number') {
                 const date = XLSX.SSF.parse_date_code(value);
                 (newRow as any)[typedKey] = `${String(date.d).padStart(2, '0')}.${String(date.m).padStart(2, '0')}.${date.y}`;
-            } else {
+            } else if (value === undefined || value === null) {
+                (newRow as any)[typedKey] = ''; // Ensure no undefined/null values
+            }
+            else {
                  (newRow as any)[typedKey] = value;
             }
         }

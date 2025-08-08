@@ -226,7 +226,7 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 
 // 3. Activity by Companies
 export const getCompanyActivity = (data: MessageData[]) => {
-  const excludedAuthors = ['QA'];
+  const excludedAuthors: string[] = []; // Removed "QA"
   const filteredData = data.filter(d => !excludedAuthors.includes(d['Отправитель']));
   if (!filteredData || filteredData.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
 
@@ -251,6 +251,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
         participants[participantName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthor };
       }
       
+      // If a participant is found as a company, it should not be an author.
       if (!isAuthor && participants[participantName].isAuthor) {
           participants[participantName].isAuthor = false;
       }
@@ -372,10 +373,10 @@ export const getNicheExpertise = (data: MessageData[]) => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
 
-    if (!nicheValue || typeof nicheValue !== 'string' || !nicheValue.trim()) {
-      niche = '(Не указана)';
+    if (!nicheValue || String(nicheValue).trim() === '') {
+        niche = '(Не указана)';
     } else {
-      niche = nicheValue.trim();
+        niche = String(nicheValue).trim();
     }
       
     if (!niches[niche]) {
