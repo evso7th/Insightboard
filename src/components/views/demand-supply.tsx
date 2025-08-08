@@ -65,7 +65,7 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
 
       <Card className="xl:col-span-2">
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle>
                 {selectedRole ? `Динамика по роли: ${selectedRole}` : `Спрос и предложение по ТОП-10 ролям`}
