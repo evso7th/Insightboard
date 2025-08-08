@@ -45,9 +45,9 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 md:gap-8">
+    <div>
       {/* KPI cards and participant selector */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-4 md:mb-8">
         <KpiCard title="Общее число событий" value={totalEvents} icon={BarChart} />
         <KpiCard title="Количество предложений" value={offers} icon={Briefcase} />
         <KpiCard title="Количество запросов" value={demands} icon={Users} />
@@ -77,7 +77,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       </div>
       
       {/* Chart Container */}
-      <div>
+      <div className="mb-4 md:mb-8">
          <Card>
           <CardHeader>
             <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
@@ -100,7 +100,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       </div>
       
       {/* Tables Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-4 md:mb-8">
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
