@@ -112,7 +112,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
                 <BarChart data={topInvitersChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }} onClick={(e) => handleChartClick(e, 'inviter')}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={100} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={150} />
                   <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                   <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Приглашения" radius={[0, 4, 4, 0]} className="cursor-pointer">
                     <LabelList dataKey="count" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
@@ -182,7 +182,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
                 <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }} onClick={(e) => handleChartClick(e, 'invitee')}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={100} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={150} />
                   <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                   <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Получено" radius={[0, 4, 4, 0]} className="cursor-pointer">
                     <LabelList dataKey="count" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
