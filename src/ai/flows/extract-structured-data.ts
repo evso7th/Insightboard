@@ -71,9 +71,14 @@ Here are detailed instructions for each field:
 
 Ignore simple conversational messages like "Локация?" or "И как? довольны?". Focus only on messages with substantive offers, requests, or event details.
 
+Your entire output must be a single JSON object with one key: "extractedData", which should be an array of objects matching the schema. Do NOT output anything else.
+
 Raw text to analyze:
 {{{rawText}}}
 `,
+  config: {
+    json: true,
+  },
 });
 
 const extractStructuredDataFlow = ai.defineFlow(
@@ -89,21 +94,9 @@ const extractStructuredDataFlow = ai.defineFlow(
     if (!output) {
       throw new Error("AI failed to return structured data.");
     }
-
-    let parsedOutput: ExtractStructuredDataOutput;
-    if (typeof output === 'string') {
-        try {
-            parsedOutput = JSON.parse(output);
-        } catch (e) {
-            console.error("Failed to parse string output from LLM:", e);
-            throw new Error("AI returned a malformed string instead of JSON.");
-        }
-    } else {
-        parsedOutput = output;
-    }
     
     // Ensure line numbers are sequential
-    const dataWithSequentialLineNumbers = parsedOutput.extractedData.map((item, index) => ({
+    const dataWithSequentialLineNumbers = output.extractedData.map((item, index) => ({
       ...item,
       '№ стр.': index + 1,
     }));
