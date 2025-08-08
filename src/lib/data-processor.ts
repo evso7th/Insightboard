@@ -65,7 +65,13 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
   const counts = countBy(filteredData, 'Тип события');
 
   // Calculate activity by date for the filtered data
-  const activityByDateCounts = countBy(filteredData.filter(d => d['Дата']), 'Дата');
+  const activityByDateCounts = filteredData.reduce((acc: { [key: string]: number }, item) => {
+    const dateStr = item['Дата'];
+    if (dateStr) {
+      acc[dateStr] = (acc[dateStr] || 0) + 1;
+    }
+    return acc;
+  }, {});
   
   const activityByDate = Object.entries(activityByDateCounts)
     .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
@@ -296,4 +302,5 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
 

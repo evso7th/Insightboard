@@ -168,3 +168,4 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
