@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { ChartTooltipContent } from "../ui/chart";
 import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   const { uniqueNiches, topNiche, urgentExpertise, nicheData, heatmapData } = getNicheExpertise(data);
@@ -87,6 +88,3 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-// Dummy ScrollArea for compilation
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;

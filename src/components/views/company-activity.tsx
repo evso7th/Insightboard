@@ -1,5 +1,5 @@
 'use client';
-import { Building, Users, Briefcase, BarChart } from "lucide-react";
+import { Building, Users, Briefcase } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getCompanyActivity } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const { topOfferingCompany, topDemandingCompany, totalMentions, companyData, top10CompanyChart } = getCompanyActivity(data);
@@ -79,6 +80,3 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-// Dummy ScrollArea for compilation
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function DemandSupplyView({ data }: { data: MessageData[] }) {
   const { rolesInDemand, rolesInSupply, imbalance, roleData, top10RolesChart } = getDemandSupplyByRole(data);
@@ -79,6 +80,3 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-// Dummy ScrollArea for compilation
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;

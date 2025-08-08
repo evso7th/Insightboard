@@ -6,6 +6,7 @@ import type { MessageData } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { AIInsight } from "../ai-insight";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function InvitationNetworkView({ data }: { data: MessageData[] }) {
   const { topInviter, totalInvitations, averageInvitations, networkData } = getInvitationNetwork(data);
@@ -70,6 +71,3 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-// Dummy ScrollArea for compilation
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AIInsight } from "../ai-insight";
+import { ScrollArea } from "../ui/scroll-area";
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const { totalEvents, offers, demands, invitations, topParticipant, activityByDate, latestEvents } = getGeneralActivityMetrics(data);
@@ -83,6 +84,3 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-// Dummy ScrollArea for compilation
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;

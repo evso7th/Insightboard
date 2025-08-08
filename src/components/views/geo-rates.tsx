@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { ChartTooltipContent } from "../ui/chart";
 import { Pie, PieChart, Tooltip, ResponsiveContainer, Cell, Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
+import { ScrollArea } from "../ui/scroll-area";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))'];
 
@@ -111,6 +112,3 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-// Dummy ScrollArea for compilation
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;
