@@ -27,15 +27,14 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
     },
   };
   
-
   return (
-    <div className="grid gap-4 md:gap-8">
+    <div className="flex flex-col gap-4 md:gap-8">
       <div className="grid gap-4 sm:grid-cols-2">
         <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChartIcon} />
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
       </div>
       
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mb-4 md:mb-8">
          <Card>
             <CardHeader>
             <CardTitle>Средние ставки по ролям (ТОП-10)</CardTitle>
@@ -61,7 +60,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
                 <CardTitle>Сводная таблица: Ставки по ролям</CardTitle>
                 <CardDescription>Все роли, для которых были найдены ставки</CardDescription>
             </CardHeader>
-            <CardContent className="h-[350px]">
+            <CardContent className="h-[385px]">
             <ScrollArea className="h-full">
                 <Table>
                 <TableHeader>

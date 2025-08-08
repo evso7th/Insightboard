@@ -85,73 +85,75 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
 
   if (selectedParticipant) {
     return (
-      <div className="flex flex-col gap-4">
-        <Button onClick={handleBackToOverview} variant="ghost" className="self-start">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Вернуться к списку
-        </Button>
-        <Card>
-          <CardHeader>
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle>Детализация по участнику: {selectedParticipant}</CardTitle>
-                <CardDescription>Спрос и предложение по ролям за {selectedYear || 'все время'}</CardDescription>
+      <div className="flex flex-col gap-4 md:gap-8">
+        <div className="mb-4 md:mb-8">
+          <Button onClick={handleBackToOverview} variant="ghost" className="self-start">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Вернуться к списку
+          </Button>
+          <Card>
+            <CardHeader>
+               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle>Детализация по участнику: {selectedParticipant}</CardTitle>
+                  <CardDescription>Спрос и предложение по ролям за {selectedYear || 'все время'}</CardDescription>
+                </div>
+                 <div className="flex items-center gap-2 flex-wrap">
+                  <Button variant={selectedYear === null ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(null)}>Все года</Button>
+                  {uniqueYearsInCompany.map(year => (
+                    <Button key={year} variant={selectedYear === year ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(year)}>{year}</Button>
+                  ))}
+                 </div>
               </div>
-               <div className="flex items-center gap-2 flex-wrap">
-                <Button variant={selectedYear === null ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(null)}>Все года</Button>
-                {uniqueYearsInCompany.map(year => (
-                  <Button key={year} variant={selectedYear === year ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(year)}>{year}</Button>
-                ))}
-               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-5">
-             <div className="h-[400px] w-full md:col-span-3">
-               <ChartContainer config={chartConfig}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
-                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                    <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                    <Bar dataKey="demands" fill="hsl(var(--accent))" name="Спрос" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
-             <div className="h-[400px] md:col-span-2">
-              <ScrollArea className="h-full">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Роль</TableHead>
-                      <TableHead>Предл.</TableHead>
-                      <TableHead>Спрос</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {companyDetails.map((row) => (
-                      <TableRow key={row.role}>
-                        <TableCell className="font-medium">{row.role}</TableCell>
-                        <TableCell>{row.offers}</TableCell>
-                        <TableCell>{row.demands}</TableCell>
+            </CardHeader>
+            <CardContent className="grid gap-6 md:grid-cols-5">
+               <div className="h-[400px] w-full md:col-span-3">
+                 <ChartContainer config={chartConfig}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                      <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                      <Bar dataKey="demands" fill="hsl(var(--accent))" name="Спрос" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </div>
+               <div className="h-[400px] md:col-span-2">
+                <ScrollArea className="h-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Роль</TableHead>
+                        <TableHead>Предл.</TableHead>
+                        <TableHead>Спрос</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-             </div>
-          </CardContent>
-        </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {companyDetails.map((row) => (
+                        <TableRow key={row.role}>
+                          <TableCell className="font-medium">{row.role}</TableCell>
+                          <TableCell>{row.offers}</TableCell>
+                          <TableCell>{row.demands}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+               </div>
+            </CardContent>
+          </Card>
+        </div>
          <AIInsight input={aiInput} />
       </div>
     )
   }
 
   return (
-    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-3">
+    <div className="flex flex-col gap-4 md:gap-8">
+       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Топ по предложениям</CardTitle>
@@ -188,59 +190,62 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
       
-      <Card className="xl:col-span-2">
-        <CardHeader>
-          <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>
-          <CardDescription>Нажмите на столбец для детализации</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[350px] w-full pl-2">
-          <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick data={top20CompanyChart} />} tickLine={false} axisLine={false} />
-                <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[0, 4, 4, 0]} className="cursor-pointer">
-                   <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-4 md:mb-8">
+        <Card className="lg:col-span-2">
+            <CardHeader>
+            <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>
+            <CardDescription>Нажмите на столбец для детализации</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[350px] w-full pl-2">
+            <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                    <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick data={top20CompanyChart} />} tickLine={false} axisLine={false} />
+                    <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                    <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[0, 4, 4, 0]} className="cursor-pointer">
+                    <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
+                    </Bar>
+                </BarChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+            </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Активность по компаниям</CardTitle>
-          <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора. Некоторые ники авторов могут совпадать с названиями ролей (например, 'QA').</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[350px]">
-           <ScrollArea className="h-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Компания</TableHead>
-                  <TableHead>Предложения</TableHead>
-                  <TableHead>Спрос</TableHead>
-                  <TableHead>Уник. роли</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {companyData.map((row) => (
-                  <TableRow key={row.name} onClick={() => handleParticipantSelect(row.name)} className="cursor-pointer">
-                    <TableCell className={row.isAuthor ? '' : 'font-bold'}>{row.name}</TableCell>
-                    <TableCell>{row.offers}</TableCell>
-                    <TableCell>{row.demands}</TableCell>
-                    <TableCell>{row.uniqueRoles}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        </CardContent>
-      </Card>
-      <div className="xl:col-span-3">
+        <Card>
+            <CardHeader>
+            <CardTitle>Активность по компаниям</CardTitle>
+            <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора. Некоторые ники авторов могут совпадать с названиями ролей (например, 'QA').</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+            <ScrollArea className="h-full">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Компания</TableHead>
+                    <TableHead>Предложения</TableHead>
+                    <TableHead>Спрос</TableHead>
+                    <TableHead>Уник. роли</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {companyData.map((row) => (
+                    <TableRow key={row.name} onClick={() => handleParticipantSelect(row.name)} className="cursor-pointer">
+                        <TableCell className={row.isAuthor ? '' : 'font-bold'}>{row.name}</TableCell>
+                        <TableCell>{row.offers}</TableCell>
+                        <TableCell>{row.demands}</TableCell>
+                        <TableCell>{row.uniqueRoles}</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </ScrollArea>
+            </CardContent>
+        </Card>
+      </div>
+
+      <div>
         <AIInsight input={aiInput} />
       </div>
     </div>
