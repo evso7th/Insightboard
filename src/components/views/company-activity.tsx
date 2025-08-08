@@ -195,7 +195,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
               <TableBody>
                 {companyData.map((row) => (
                   <TableRow key={row.name} onClick={() => handleParticipantSelect(row.name)} className="cursor-pointer">
-                    <TableCell className="font-medium">{row.name}</TableCell>
+                    <TableCell className={row.isAuthor ? '' : 'font-bold'}>{row.name}</TableCell>
                     <TableCell>{row.offers}</TableCell>
                     <TableCell>{row.demands}</TableCell>
                     <TableCell>{row.uniqueRoles}</TableCell>

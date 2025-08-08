@@ -137,8 +137,7 @@ export const getParticipantMetrics = (data: MessageData[], year: number | null) 
 
 const processRoles = (roleString: string): string[] => {
     if (!roleString) return [];
-    // Split by comma or slash, trim whitespace, and filter out empty strings
-    return roleString.split(/[,/]/).map(r => r.trim()).filter(r => r);
+    return roleString.split(/[,/]/).map(r => r.trim()).filter(r => r && r.length > 0);
 };
 
 // 2. Demand vs. Supply by Roles
@@ -463,3 +462,4 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
+
