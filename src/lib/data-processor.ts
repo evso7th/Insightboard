@@ -48,36 +48,37 @@ export const getGeneralActivityMetrics = (data: MessageData[], selectedParticipa
       latestEvents: [],
     };
   }
-  
+
+  // Calculate participant counts on the full dataset
   const participantActivity = countBy(data, 'Отправитель');
   const participantsWithCounts = Object.entries(participantActivity)
     .map(([name, count]) => ({ name, count: count as number }))
     .sort((a, b) => b.count - a.count);
-  
   const top10Participants = participantsWithCounts.slice(0, 10);
 
+  // Filter data based on selection
   const filteredData = selectedParticipant 
     ? data.filter(d => d['Отправитель'] === selectedParticipant)
     : data;
 
+  // Calculate KPIs for the filtered data
   const counts = countBy(filteredData, 'Тип события');
-  
+
+  // Calculate activity by date for the filtered data
   const activityByDate = Object.entries(countBy(filteredData.filter(d => d['Дата']), 'Дата'))
     .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
     .filter(item => item.dateObj !== null)
-    .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime())
-    .map(({date, count, dateObj}) => ({ date, count, dateObj }));
-
+    .sort((a, b) => a.dateObj!.getTime() - b.dateObj!.getTime());
 
   return {
     totalEvents: filteredData.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
     invitations: counts['приглашение'] || 0,
-    participantsWithCounts,
-    top10Participants,
-    activityByDate,
-    latestEvents: filteredData.slice(-20).reverse(),
+    participantsWithCounts, // This should contain all participants for the dropdown
+    top10Participants, // This is static based on all data
+    activityByDate, // This is now correctly filtered
+    latestEvents: filteredData.slice(-20).reverse(), // This is also correctly filtered
   };
 };
 
