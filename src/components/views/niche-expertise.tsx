@@ -1,16 +1,18 @@
 
 'use client';
 import { useMemo } from "react";
-import { BrainCircuit, Star, Zap } from "lucide-react";
+import { BrainCircuit, Star, Zap, Download } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getNicheExpertise } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { exportToCSV } from "@/lib/utils";
 
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
@@ -34,6 +36,12 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
     const unnamed = nicheData.find(n => n.name === '(Не указана)');
     return unnamed ? unnamed.contextExamples : '';
   }, [nicheData]);
+
+  const handleExportNiches = () => {
+    const headers = ['"Ниша"', '"Компании"', '"Упоминания"'];
+    const dataToExport = nicheData.map(row => `"${row.name.replace(/"/g, '""')}","${row.companies.replace(/"/g, '""')}",${row.mentions}`);
+    exportToCSV(headers, dataToExport, 'niche_expertise.csv');
+  };
 
   const aiInput = {
     dataSummary: `Всего уникальных ниш: ${uniqueNiches}, Топ-1 ниша: ${topNiche}, Экспертиз с высокой срочностью: ${urgentExpertise}. Есть большая категория ниш "(Не указана)", примеры контекста из которой: "${unnamedNicheContext}". Данные показывают, какие ниши наиболее упоминаемы.`,
@@ -83,8 +91,14 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
         </Card>
 
         <Card>
-            <CardHeader>
-            <CardTitle>Данные по нишам</CardTitle>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle>Данные по нишам</CardTitle>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleExportNiches} disabled={nicheData.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
             </CardHeader>
             <CardContent className="h-[400px]">
             <ScrollArea className="h-full">
@@ -115,3 +129,5 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    

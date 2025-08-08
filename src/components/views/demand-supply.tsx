@@ -1,17 +1,18 @@
 
 'use client';
 import { useState, useMemo } from "react";
-import { Briefcase, Users, Scale, LineChart as LineChartIcon } from "lucide-react";
+import { Briefcase, Users, Scale, Download } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getDemandSupplyByRole, getRoleYearlyDemandSupply } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
+import { exportToCSV } from "@/lib/utils";
 
 export function DemandSupplyView({ data }: { data: MessageData[] }) {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -34,6 +35,12 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
     setSelectedYear(year);
     setSelectedRole(null); // Reset role selection when year changes
   }
+
+  const handleExportRoles = () => {
+    const headers = ['"Роль"', '"Спрос"', '"Предложение"', '"Баланс"'];
+    const dataToExport = roleData.map(row => `"${row.role}",${row.demand},${row.supply},${row.balance}`);
+    exportToCSV(headers, dataToExport, `demand_supply_by_role_${selectedYear || 'all_years'}.csv`);
+  };
 
   const aiInput = {
     dataSummary: selectedRole 
@@ -112,9 +119,15 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Сводная таблица по ролям</CardTitle>
-           <CardDescription>Нажмите на строку для просмотра динамики</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div>
+            <CardTitle>Сводная таблица по ролям</CardTitle>
+            <CardDescription>Нажмите на строку для просмотра динамики</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportRoles} disabled={roleData.length === 0}>
+            <Download className="mr-2 h-4 w-4" />
+            CSV
+          </Button>
         </CardHeader>
         <CardContent className="h-[350px]">
            <ScrollArea className="h-full">
@@ -151,3 +164,5 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    

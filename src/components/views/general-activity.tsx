@@ -1,11 +1,11 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { BarChart, Briefcase, Users } from "lucide-react";
+import { BarChart, Briefcase, Users, Download } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeneralActivityMetrics, getParticipantMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
@@ -13,6 +13,7 @@ import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
+import { exportToCSV } from '@/lib/utils';
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
@@ -40,6 +41,18 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       
     return getParticipantMetrics(filteredByParticipantData, selectedYear);
   }, [data, selectedParticipant, selectedYear]);
+
+  const handleExportTopParticipants = () => {
+    const headers = ['"Участник"', '"События"'];
+    const dataToExport = top10Participants.map(row => `"${row.name}",${row.count}`);
+    exportToCSV(headers, dataToExport, 'top_10_participants.csv');
+  };
+
+  const handleExportLatestEvents = () => {
+    const headers = ['"Дата"', '"Отправитель"', '"Тип"', '"Роль"'];
+    const dataToExport = latestEvents.map(row => `"${row['Дата']}","${row['Отправитель']}","${row['Тип события']}","${row['Роль']}"`);
+    exportToCSV(headers, dataToExport, `latest_events_${selectedParticipant || 'all'}.csv`);
+  };
   
   const aiInput = {
     dataSummary: `Статистика для ${selectedParticipant || 'всех участников'} за ${selectedYear || 'всё время'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
@@ -121,11 +134,12 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-4 md:mb-8">
         <div className="lg:col-span-1">
           <Card>
-            <CardHeader 
-              onClick={() => handleParticipantChange(null)}
-              className="cursor-pointer hover:bg-muted/50 rounded-t-lg"
-            >
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle>ТОП-10 Участников</CardTitle>
+              <Button variant="outline" size="sm" onClick={handleExportTopParticipants} disabled={top10Participants.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[240px]">
@@ -162,8 +176,12 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </div>
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle>Последние 20 событий {selectedParticipant ? `- ${selectedParticipant}`: ''}</CardTitle>
+               <Button variant="outline" size="sm" onClick={handleExportLatestEvents} disabled={latestEvents.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[240px]">
@@ -199,3 +217,5 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    

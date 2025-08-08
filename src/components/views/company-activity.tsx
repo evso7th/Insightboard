@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { Building, Users, Briefcase, ArrowLeft } from "lucide-react";
+import { Building, Users, Briefcase, ArrowLeft, Download } from "lucide-react";
 import { getCompanyActivity, getCompanyDetail } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
@@ -11,6 +11,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContaine
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from '../ui/button';
+import { exportToCSV } from '@/lib/utils';
 
 const CustomTick = (props: any) => {
   const { x, y, payload, data } = props;
@@ -64,6 +65,18 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   const handleBackToOverview = () => {
     setSelectedParticipant(null);
     setSelectedYear(null);
+  };
+  
+  const handleExportCompanyDetails = () => {
+    const headers = ['"Роль"', '"Предложения"', '"Спрос"'];
+    const dataToExport = companyDetails.map(row => `"${row.role}",${row.offers},${row.demands}`);
+    exportToCSV(headers, dataToExport, `company_details_${selectedParticipant}_${selectedYear || 'all_years'}.csv`);
+  };
+
+  const handleExportCompanyList = () => {
+      const headers = ['"Компания"', '"Предложения"', '"Спрос"', '"Уникальные роли"', '"Это автор"'];
+      const dataToExport = companyData.map(row => `"${row.name}",${row.offers},${row.demands},${row.uniqueRoles},${row.isAuthor}`);
+      exportToCSV(headers, dataToExport, 'company_activity.csv');
   };
 
   const aiInput = {
@@ -119,7 +132,13 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                 </ChartContainer>
               </div>
                <div className="h-[400px] md:col-span-2">
-                <ScrollArea className="h-full">
+                <div className="flex items-center justify-end mb-2">
+                    <Button variant="outline" size="sm" onClick={handleExportCompanyDetails} disabled={companyDetails.length === 0}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Выгрузить в CSV
+                    </Button>
+                </div>
+                <ScrollArea className="h-full border rounded-md">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -211,9 +230,15 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         </Card>
 
         <Card>
-            <CardHeader>
-            <CardTitle>Активность по компаниям</CardTitle>
-            <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора. Некоторые ники авторов могут совпадать с названиями ролей (например, 'QA').</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Активность по компаниям</CardTitle>
+                <CardDescription className="text-xs mt-1">Если компания не обнаружена, выводится имя автора. Некоторые ники могут совпадать с названиями ролей.</CardDescription>
+              </div>
+               <Button variant="outline" size="sm" onClick={handleExportCompanyList} disabled={companyData.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                CSV
+              </Button>
             </CardHeader>
             <CardContent className="h-[400px]">
             <ScrollArea className="h-full">
@@ -221,7 +246,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
                 <TableHeader>
                     <TableRow>
                     <TableHead>Компания</TableHead>
-                    <TableHead>Предложения</TableHead>
+                    <TableHead>Предл.</TableHead>
                     <TableHead>Спрос</TableHead>
                     <TableHead>Уник. роли</TableHead>
                     </TableRow>
@@ -246,3 +271,5 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+    
