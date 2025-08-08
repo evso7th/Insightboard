@@ -49,14 +49,15 @@ export const getDemandSupplyByRole = (data: MessageData[]) => {
   const roles: { [key: string]: { demand: number; supply: number } } = {};
 
   data.forEach(item => {
-    if (item['Роль']) {
-      if (!roles[item['Роль']]) {
-        roles[item['Роль']] = { demand: 0, supply: 0 };
+    const role = item['Роль'];
+    if (role) {
+      if (!roles[role]) {
+        roles[role] = { demand: 0, supply: 0 };
       }
       if (item['Тип события'] === 'спрос') {
-        roles[item['Роль']].demand++;
+        roles[role].demand++;
       } else if (item['Тип события'] === 'предложение') {
-        roles[item['Роль']].supply++;
+        roles[role].supply++;
       }
     }
   });
@@ -68,8 +69,8 @@ export const getDemandSupplyByRole = (data: MessageData[]) => {
     balance: demand - supply,
   })).sort((a, b) => (b.demand + b.supply) - (a.demand + a.supply));
 
-  const totalDemand = roleData.reduce((sum, r) => sum + (r.demand > 0 ? 1 : 0), 0);
-  const totalSupply = roleData.reduce((sum, r) => sum + (r.supply > 0 ? 1 : 0), 0);
+  const totalDemand = roleData.reduce((sum, r) => sum + r.demand, 0);
+  const totalSupply = roleData.reduce((sum, r) => sum + r.supply, 0);
 
   return {
     rolesInDemand: totalDemand,
