@@ -59,7 +59,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
             <CardHeader>
                 <CardTitle>Сводная таблица: Ставки по ролям</CardTitle>
                 <CardDescription>Все роли, для которых были найдены ставки</CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent className="h-[385px]">
             <ScrollArea className="h-full">
                 <Table>
