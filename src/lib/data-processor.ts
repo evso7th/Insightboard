@@ -19,8 +19,8 @@ const parseDate = (dateString: string): Date | null => {
     if (parts.length === 3) {
         // new Date(year, monthIndex, day)
         const date = new Date(+parts[2], +parts[1] - 1, +parts[0]);
-        // Check if the parsed date is valid
-        if (!isNaN(date.getTime())) {
+        // Check if the parsed date is valid and the year is reasonable
+        if (!isNaN(date.getTime()) && date.getFullYear() > 1970) {
             return date;
         }
     }
@@ -51,7 +51,7 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
     .filter(item => item.dateObj !== null)
     // @ts-ignore
     .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
-    .map(({date, count}) => ({ date, count }));
+    .map(({date, count, dateObj}) => ({ date, count, dateObj }));
 
 
   return {

@@ -14,7 +14,10 @@ import { ScrollArea } from "../ui/scroll-area";
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const { totalEvents, offers, demands, invitations, topParticipant, activityByDate, latestEvents } = getGeneralActivityMetrics(data);
 
-  const chartData = activityByDate.map(d => ({...d, date: new Date(d.date.split('.').reverse().join('-')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}));
+  const chartData = activityByDate.map(d => ({
+    ...d, 
+    date: d.dateObj?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || d.date
+  }));
 
   const aiInput = {
     dataSummary: `Total events: ${totalEvents}, Offers: ${offers}, Demands: ${demands}, Invitations: ${invitations}. Activity trends show counts of events per day. Recent events are listed.`,
@@ -92,3 +95,4 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
