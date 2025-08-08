@@ -83,12 +83,27 @@ const extractStructuredDataFlow = ai.defineFlow(
     outputSchema: ExtractStructuredDataOutputSchema,
   },
   async (input) => {
-    const { output } = await extractorPrompt(input);
+    const llmResponse = await extractorPrompt(input);
+    const output = llmResponse.output;
+
     if (!output) {
       throw new Error("AI failed to return structured data.");
     }
+
+    let parsedOutput: ExtractStructuredDataOutput;
+    if (typeof output === 'string') {
+        try {
+            parsedOutput = JSON.parse(output);
+        } catch (e) {
+            console.error("Failed to parse string output from LLM:", e);
+            throw new Error("AI returned a malformed string instead of JSON.");
+        }
+    } else {
+        parsedOutput = output;
+    }
+    
     // Ensure line numbers are sequential
-    const dataWithSequentialLineNumbers = output.extractedData.map((item, index) => ({
+    const dataWithSequentialLineNumbers = parsedOutput.extractedData.map((item, index) => ({
       ...item,
       '№ стр.': index + 1,
     }));
