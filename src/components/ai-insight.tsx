@@ -23,7 +23,7 @@ export function AIInsight({ input }: AIInsightProps) {
       const result = await generateInsight(input);
       setInsight(result.insights);
     } catch (e) {
-      setError('Failed to generate insights. Please try again.');
+      setError('Не удалось сгенерировать аналитику. Попробуйте снова.');
       console.error(e);
     } finally {
       setLoading(false);
@@ -35,23 +35,23 @@ export function AIInsight({ input }: AIInsightProps) {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base font-semibold text-primary/90 flex items-center gap-2">
           <Lightbulb className="h-5 w-5" />
-          AI-Powered Insights
+          Аналитика от ИИ
         </CardTitle>
         <Button onClick={handleGenerate} disabled={loading} size="sm" variant="outline" className="bg-background/80 hover:bg-background">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {loading ? 'Generating...' : 'Generate'}
+          {loading ? 'Генерация...' : 'Сгенерировать'}
         </Button>
       </CardHeader>
       <CardContent className="pt-4">
-        {loading && <p className="text-sm text-muted-foreground flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing data...</p>}
+        {loading && <p className="text-sm text-muted-foreground flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Анализ данных...</p>}
         {error && 
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>Ошибка</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         }
         {insight && <p className="text-sm text-foreground/90 whitespace-pre-wrap font-sans">{insight}</p>}
-        {!loading && !insight && !error && <p className="text-sm text-muted-foreground">Click "Generate" to get AI-powered insights for this view.</p>}
+        {!loading && !insight && !error && <p className="text-sm text-muted-foreground">Нажмите "Сгенерировать", чтобы получить аналитику для этого представления.</p>}
       </CardContent>
     </Card>
   );
