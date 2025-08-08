@@ -1,22 +1,47 @@
 
 'use client';
-import { Briefcase, Users, Scale } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Briefcase, Users, Scale, LineChart as LineChartIcon } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
-import { getDemandSupplyByRole } from "@/lib/data-processor";
+import { getDemandSupplyByRole, getRoleYearlyDemandSupply } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
+import { Bar, BarChart, Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
 
 export function DemandSupplyView({ data }: { data: MessageData[] }) {
-  const { rolesInDemand, rolesInSupply, imbalance, roleData, top10RolesChart } = getDemandSupplyByRole(data);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  const { rolesInDemand, rolesInSupply, imbalance, roleData, top10RolesChart, uniqueYears } = useMemo(() => {
+    return getDemandSupplyByRole(data, selectedYear);
+  }, [data, selectedYear]);
+
+  const roleYearlyData = useMemo(() => {
+    if (!selectedRole) return [];
+    return getRoleYearlyDemandSupply(data, selectedRole);
+  }, [data, selectedRole]);
   
+  const handleRoleClick = (role: string) => {
+    setSelectedRole(prevRole => prevRole === role ? null : role);
+  };
+  
+  const handleYearChange = (year: number | null) => {
+    setSelectedYear(year);
+    setSelectedRole(null); // Reset role selection when year changes
+  }
+
   const aiInput = {
-    dataSummary: `Всего ролей в спросе: ${rolesInDemand}, Всего ролей в предложении: ${rolesInSupply}, Дисбаланс: ${imbalance}. График сравнивает спрос и предложение для топ-10 ролей. В таблице представлена полная разбивка.`,
-    viewDescription: "Это представление анализирует рынок труда, сравнивая спрос (запросы на роли) с предложением (предложения ролей). Оно показывает, какие роли наиболее востребованы, а какие наиболее доступны, и демонстрирует баланс для каждой из них."
+    dataSummary: selectedRole 
+      ? `Анализ для роли "${selectedRole}" по годам. Данные показывают изменение спроса и предложения.`
+      : `Статистика за ${selectedYear || 'всё время'}: Всего ролей в спросе - ${rolesInDemand}, Всего ролей в предложении - ${rolesInSupply}, Дисбаланс: ${imbalance}. График сравнивает спрос и предложение для топ-10 ролей.`,
+    viewDescription: selectedRole
+      ? `Это представление показывает годовую динамику спроса и предложения для конкретной роли: ${selectedRole}.`
+      : "Это представление анализирует рынок труда, сравнивая спрос (запросы на роли) с предложением (предложения ролей). Оно показывает, какие роли наиболее востребованы, а какие наиболее доступны, и демонстрирует баланс для каждой из них."
   };
 
   const chartConfig = {
@@ -40,26 +65,56 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
 
       <Card className="xl:col-span-2">
         <CardHeader>
-          <CardTitle>Спрос и предложение по ТОП-10 ролям</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <CardTitle>
+                {selectedRole ? `Динамика по роли: ${selectedRole}` : `Спрос и предложение по ТОП-10 ролям`}
+              </CardTitle>
+              <CardDescription>
+                {selectedRole ? 'Сравнение спроса и предложения по годам' : `Данные за ${selectedYear || 'всё время'}`}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant={selectedYear === null ? 'default' : 'outline'} size="sm" onClick={() => handleYearChange(null)}>Все года</Button>
+              {uniqueYears.map(year => (
+                <Button key={year} variant={selectedYear === year ? 'default' : 'outline'} size="sm" onClick={() => handleYearChange(year)}>{year}</Button>
+              ))}
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
-          <ChartContainer config={chartConfig}>
-            <BarChart data={top10RolesChart} margin={{ top: 5, right: 20, left: 10, bottom: 70 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
-              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-              <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-              <Legend wrapperStyle={{fontSize: "12px"}}/>
-              <Bar dataKey="demand" fill="hsl(var(--primary))" name="Спрос" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="supply" fill="hsl(var(--accent))" name="Предложение" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
+          {selectedRole ? (
+             <ChartContainer config={chartConfig}>
+              <LineChart data={roleYearlyData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                <XAxis dataKey="year" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip content={<ChartTooltipContent />} cursor={true} />
+                <Legend wrapperStyle={{fontSize: "12px"}}/>
+                <Line type="monotone" dataKey="demand" stroke="hsl(var(--primary))" strokeWidth={2} name="Спрос" />
+                <Line type="monotone" dataKey="supply" stroke="hsl(var(--accent))" strokeWidth={2} name="Предложение"/>
+              </LineChart>
+            </ChartContainer>
+          ) : (
+            <ChartContainer config={chartConfig}>
+              <BarChart data={top10RolesChart} margin={{ top: 5, right: 20, left: 10, bottom: 70 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0}/>
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                <Legend wrapperStyle={{fontSize: "12px"}}/>
+                <Bar dataKey="demand" fill="hsl(var(--primary))" name="Спрос" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="supply" fill="hsl(var(--accent))" name="Предложение" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
+          )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>Сводная таблица по ролям</CardTitle>
+           <CardDescription>Нажмите на строку для просмотра динамики</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px]">
            <ScrollArea className="h-full">
@@ -74,11 +129,15 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
               </TableHeader>
               <TableBody>
                 {roleData.map((row) => (
-                  <TableRow key={row.role}>
+                  <TableRow 
+                    key={row.role}
+                    onClick={() => handleRoleClick(row.role)}
+                    className={`cursor-pointer ${selectedRole === row.role ? 'bg-muted' : ''}`}
+                  >
                     <TableCell className="font-medium">{row.role}</TableCell>
                     <TableCell>{row.demand}</TableCell>
                     <TableCell>{row.supply}</TableCell>
-                    <TableCell className={row.balance > 0 ? "text-green-600" : "text-red-600"}>{row.balance}</TableCell>
+                    <TableCell className={row.balance > 0 ? "text-green-600" : row.balance < 0 ? "text-red-600" : ""}>{row.balance}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -45,7 +45,6 @@ const parseDate = (dateString: string): Date | null => {
 
 
 // 1. General Activity
-// This function calculates metrics that do not depend on the participant filter.
 export const getGeneralActivityMetrics = (data: MessageData[]) => {
   if (!data || data.length === 0) {
     return {
@@ -85,7 +84,6 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
   };
 };
 
-// This function calculates metrics for a given dataset (which can be pre-filtered).
 export const getParticipantMetrics = (data: MessageData[], year: number | null) => {
   if (!data || data.length === 0) {
     return {
@@ -100,14 +98,15 @@ export const getParticipantMetrics = (data: MessageData[], year: number | null) 
   let datedData = data
     .map(item => ({ ...item, dateObj: parseDate(item['Дата']) }))
     .filter((item): item is MessageData & { dateObj: Date } => item.dateObj !== null);
-
+  
+  let filteredByYearData = datedData;
   if (year) {
-    datedData = datedData.filter(item => item.dateObj.getUTCFullYear() === year);
+    filteredByYearData = datedData.filter(item => item.dateObj.getUTCFullYear() === year);
   }
   
-  const counts = countBy(datedData, 'Тип события');
+  const counts = countBy(filteredByYearData, 'Тип события');
   
-  const activityByDateCounts = datedData.reduce((acc: { [key: string]: number }, item) => {
+  const activityByDateCounts = filteredByYearData.reduce((acc: { [key: string]: number }, item) => {
     const dateKey = item.dateObj.toISOString().split('T')[0];
     acc[dateKey] = (acc[dateKey] || 0) + 1;
     return acc;
@@ -125,11 +124,11 @@ export const getParticipantMetrics = (data: MessageData[], year: number | null) 
     });
 
   return {
-    totalEvents: datedData.length,
+    totalEvents: filteredByYearData.length,
     offers: counts['предложение'] || 0,
     demands: counts['спрос'] || 0,
     activityByDate,
-    latestEvents: datedData
+    latestEvents: filteredByYearData
       .sort((a, b) => b.dateObj!.getTime() - a.dateObj!.getTime())
       .slice(0, 20),
   };
@@ -137,12 +136,23 @@ export const getParticipantMetrics = (data: MessageData[], year: number | null) 
 
 
 // 2. Demand vs. Supply by Roles
-export const getDemandSupplyByRole = (data: MessageData[]) => {
-   if (!data || data.length === 0) return { rolesInDemand: 0, rolesInSupply: 0, imbalance: 0, roleData: [], top10RolesChart: [] };
+export const getDemandSupplyByRole = (data: MessageData[], year: number | null) => {
+   if (!data || data.length === 0) return { rolesInDemand: 0, rolesInSupply: 0, imbalance: 0, roleData: [], top10RolesChart: [], uniqueYears: [] };
+
+  const years = new Set<number>();
+  const datedData = data.map(item => {
+    const date = parseDate(item['Дата']);
+    if (date) {
+      years.add(date.getUTCFullYear());
+    }
+    return { ...item, dateObj: date };
+  }).filter(item => item.dateObj !== null);
+
+  const filteredData = year ? datedData.filter(item => item.dateObj?.getUTCFullYear() === year) : datedData;
 
   const roles: { [key: string]: { demand: number; supply: number } } = {};
 
-  data.forEach(item => {
+  filteredData.forEach(item => {
     const role = item['Роль'];
     if (role) {
       if (!roles[role]) {
@@ -173,8 +183,40 @@ export const getDemandSupplyByRole = (data: MessageData[]) => {
     imbalance: totalDemand - totalSupply,
     roleData,
     top10RolesChart: roleData.slice(0, 10),
+    uniqueYears: Array.from(years).sort((a,b) => a - b),
   };
 };
+
+export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => {
+  const yearlyData: { [key: number]: { demand: number; supply: number } } = {};
+
+  data.forEach(item => {
+    if (item['Роль'] === role) {
+      const date = parseDate(item['Дата']);
+      if (date) {
+        const year = date.getUTCFullYear();
+        if (!yearlyData[year]) {
+          yearlyData[year] = { demand: 0, supply: 0 };
+        }
+        const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+        if (eventType === 'спрос') {
+          yearlyData[year].demand++;
+        } else if (eventType === 'предложение') {
+          yearlyData[year].supply++;
+        }
+      }
+    }
+  });
+
+  return Object.entries(yearlyData)
+    .map(([year, { demand, supply }]) => ({
+      year: parseInt(year),
+      demand,
+      supply,
+    }))
+    .sort((a, b) => a.year - b.year);
+};
+
 
 // 3. Activity by Companies
 export const getCompanyActivity = (data: MessageData[]) => {
