@@ -38,7 +38,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
             <CardHeader>
             <CardTitle>Средние ставки по ролям (ТОП-10)</CardTitle>
             </CardHeader>
-            <CardContent className="h-[350px] w-full pl-2">
+            <CardContent className="h-[450px] w-full pl-2">
                 <ChartContainer config={chartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 50 }}>
@@ -59,7 +59,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
                 <CardTitle>Сводная таблица: Ставки по ролям</CardTitle>
                 <CardDescription>Все роли, для которых были найдены ставки</CardDescription>
             </CardHeader>
-            <CardContent className="h-[385px]">
+            <CardContent className="h-[485px]">
             <ScrollArea className="h-full">
                 <Table>
                 <TableHeader>
@@ -90,4 +90,3 @@ export function RatesView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
