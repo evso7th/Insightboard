@@ -40,6 +40,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   };
   
   const chartData = nicheData
+    .filter(n => n.name !== '(Не указана)')
     .slice(0, 15)
     .sort((a,b) => a.mentions - b.mentions);
 
