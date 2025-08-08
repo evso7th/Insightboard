@@ -492,28 +492,18 @@ export const getGeoAndRates = (data: MessageData[]) => {
 export const getInvitationNetwork = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
   
-  const invitationLinks = data
-    .map(item => {
-      const fromTo = item['Связь (from → to)'];
-      if (!fromTo || typeof fromTo !== 'string') {
-        return null;
-      }
-      
-      // Use a regex that can handle different arrow-like characters
-      const parts = String(fromTo).split(/->|→/);
-      
-      if (parts.length !== 2) {
-        return null;
-      }
+  const invitationEvents = data.filter(item => item['Тип события'] === 'приглашение');
 
-      const from = parts[0].trim();
-      const to = parts[1].trim();
-      
+  const invitationLinks = invitationEvents
+    .map(item => {
+      const from = item['Отправитель'];
+      const to = item['Связь (from → to)']; // This field should now contain the name of the invited person
+
       if (!from || !to) {
         return null;
       }
       
-      return { from, to, date: item['Дата'] };
+      return { from: from.trim(), to: String(to).trim(), date: item['Дата'] };
     })
     .filter((link): link is NonNullable<typeof link> => link !== null);
 
@@ -543,3 +533,4 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     topInvitersChartData
   };
 };
+
