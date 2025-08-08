@@ -30,6 +30,14 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
     exportToCSV(headers, dataToExport, 'top_invitees.csv');
   };
 
+  const handleExportInviters = () => {
+    const headers = ['"Кто пригласил"', '"Кол-во"'];
+    const dataToExport = topInvitersChartData
+        .map(row => `"${row.name.replace(/"/g, '""')}",${row.count}`)
+        .sort((a,b) => b.count - a.count);
+    exportToCSV(headers, dataToExport, 'top_inviters.csv');
+  };
+
   const aiInput = {
     dataSummary: `Топ-1 приглашающий: ${topInviter}, Топ-1 приглашенный: ${topInvitee}, Всего приглашений: ${totalInvitations}, Среднее число приглашений на участника: ${averageInvitations.toFixed(2)}. Таблица содержит все связи приглашений "от -> к".`,
     viewDescription: "Это представление отображает сеть приглашений между участниками. Оно показывает, кто кого приглашает, выявляет самых активных приглашающих и самых востребованных участников."
@@ -80,31 +88,6 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
             </ChartContainer>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>ТОП-10 приглашенных</CardTitle>
-            <CardDescription>Наиболее востребованные участники</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[350px] w-full pl-2">
-            <ChartContainer config={chartConfigInvitee}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={100} />
-                  <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                  <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Получено" radius={[0, 4, 4, 0]}>
-                    <LabelList dataKey="count" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <Card>
           <CardHeader className="flex flex-row items-start justify-between">
             <div>
@@ -113,7 +96,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
             </div>
             <Button variant="outline" size="sm" onClick={handleExportNetwork} disabled={networkData.length === 0}>
               <Download className="mr-2 h-4 w-4" />
-              Выгрузить в CSV
+              CSV
             </Button>
           </CardHeader>
           <CardContent className="h-[400px]">
@@ -139,7 +122,30 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
             </ScrollArea>
           </CardContent>
         </Card>
+      </div>
 
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>ТОП-10 приглашенных</CardTitle>
+            <CardDescription>Наиболее востребованные участники</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[350px] w-full pl-2">
+            <ChartContainer config={chartConfigInvitee}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={100} />
+                  <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                  <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Получено" radius={[0, 4, 4, 0]}>
+                    <LabelList dataKey="count" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="flex flex-row items-start justify-between">
             <div>
@@ -148,7 +154,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
             </div>
             <Button variant="outline" size="sm" onClick={handleExportInvitees} disabled={inviteeData.length === 0}>
               <Download className="mr-2 h-4 w-4" />
-              Выгрузить в CSV
+              CSV
             </Button>
           </CardHeader>
           <CardContent className="h-[400px]">
