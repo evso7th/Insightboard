@@ -227,13 +227,10 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 // 3. Activity by Companies
 export const getCompanyActivity = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
-  
-  const excludedAuthors = ['QA'];
-  const filteredData = data.filter(item => !excludedAuthors.includes(item['Отправитель']));
 
   const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
 
-  filteredData.forEach(item => {
+  data.forEach(item => {
     const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
     const author = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
 
@@ -252,6 +249,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
         participants[participantName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthor };
       }
       
+      // If we see a participant that was once an author but now has a company, it's a company.
       if (!isAuthor && participants[participantName].isAuthor) {
           participants[participantName].isAuthor = false;
       }

@@ -106,7 +106,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
             </div>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-5">
-            <div className="h-[400px] w-full md:col-span-3">
+             <div className="h-[400px] w-full md:col-span-3">
                <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
@@ -213,7 +213,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
       <Card>
         <CardHeader>
           <CardTitle>Активность по компаниям</CardTitle>
-          <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора</CardDescription>
+          <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора. Некоторые ники авторов могут совпадать с названиями ролей (например, 'QA').</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px]">
            <ScrollArea className="h-full">
