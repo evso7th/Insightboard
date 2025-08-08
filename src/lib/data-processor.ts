@@ -90,17 +90,19 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const companies: { [key: string]: { offers: number; demands: number; roles: Set<string> } } = {};
 
   data.forEach(item => {
-    if (item['Компания']) {
-      if (!companies[item['Компания']]) {
-        companies[item['Компания']] = { offers: 0, demands: 0, roles: new Set() };
+    const company = item['Компания'];
+    if (company) {
+      if (!companies[company]) {
+        companies[company] = { offers: 0, demands: 0, roles: new Set() };
       }
-      if (item['Тип события'] === 'предложение') {
-        companies[item['Компания']].offers++;
-      } else if (item['Тип события'] === 'спрос') {
-        companies[item['Компания']].demands++;
+      const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+      if (eventType === 'предложение') {
+        companies[company].offers++;
+      } else if (eventType === 'спрос') {
+        companies[company].demands++;
       }
       if (item['Роль']) {
-        companies[item['Компания']].roles.add(item['Роль']);
+        companies[company].roles.add(item['Роль']);
       }
     }
   });
