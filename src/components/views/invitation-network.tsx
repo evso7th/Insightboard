@@ -1,6 +1,6 @@
 
 'use client';
-import { Share2, Users, CalendarCheck } from "lucide-react";
+import { Share2, Users, CalendarCheck, Download } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getInvitationNetwork } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
@@ -10,9 +10,31 @@ import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
+import { Button } from "../ui/button";
 
 export function InvitationNetworkView({ data }: { data: MessageData[] }) {
   const { topInviter, totalInvitations, averageInvitations, networkData, topInvitersChartData } = getInvitationNetwork(data);
+
+  const handleExportCSV = () => {
+    if (networkData.length === 0) return;
+
+    const headers = ['"Кто пригласил"', '"Кого пригласил"', '"Дата"'];
+    const csvRows = [
+      headers.join(','),
+      ...networkData.map(row => 
+        `"${row.from.replace(/"/g, '""')}","${row.to.replace(/"/g, '""')}","${row.date}"`
+      )
+    ];
+    
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "invitation_network.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const aiInput = {
     dataSummary: `Топ-1 приглашающий: ${topInviter}, Всего приглашений: ${totalInvitations}, Среднее число приглашений на участника: ${averageInvitations.toFixed(2)}. Таблица содержит все связи приглашений "от -> к".`,
@@ -58,9 +80,15 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Список всех приглашений</CardTitle>
-             <CardDescription>Данные в формате "Кто пригласил" → "Кого пригласил"</CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+              <CardTitle>Список всех приглашений</CardTitle>
+              <CardDescription>Данные в формате "Кто пригласил" → "Кого пригласил"</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={networkData.length === 0}>
+              <Download className="mr-2 h-4 w-4" />
+              Выгрузить в CSV
+            </Button>
           </CardHeader>
           <CardContent className="h-[400px]">
             <ScrollArea className="h-full">
