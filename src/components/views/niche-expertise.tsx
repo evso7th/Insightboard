@@ -40,7 +40,10 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
     viewDescription: "Это представление анализирует нишевую или уникальную экспертизу, упомянутую в данных. Оно помогает выявить трендовые специализации. Особое внимание уделяется категории '(Не указана)', чтобы понять ее содержание."
   };
   
-  const chartData = nicheData.slice(0, 15).sort((a,b) => a.mentions - b.mentions);
+  const chartData = nicheData
+    .filter(n => n.name !== '(Не указана)')
+    .slice(0, 15)
+    .sort((a,b) => a.mentions - b.mentions);
 
   const chartConfig = {
     mentions: {
