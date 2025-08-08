@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from 'react';
-import { sampleData } from '@/lib/data';
+import { useState, useEffect } from 'react';
 import type { MessageData } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataUploader } from './data-uploader';
@@ -11,6 +10,7 @@ import { CompanyActivityView } from './views/company-activity';
 import { NicheExpertiseView } from './views/niche-expertise';
 import { GeoRatesView } from './views/geo-rates';
 import { InvitationNetworkView } from './views/invitation-network';
+import { sampleData } from '@/lib/data';
 
 export default function Dashboard() {
   const [data, setData] = useState<MessageData[]>(sampleData);
