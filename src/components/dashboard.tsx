@@ -11,6 +11,7 @@ import { CompanyActivityView } from './views/company-activity';
 import { NicheExpertiseView } from './views/niche-expertise';
 import { RatesView } from './views/rates';
 import { InvitationNetworkView } from './views/invitation-network';
+import { WorkFormatView } from './views/work-format';
 
 interface DashboardProps {
   initialData: MessageData[];
@@ -53,6 +54,7 @@ export default function Dashboard({ initialData }: DashboardProps) {
           <TabsTrigger value="niche-expertise">Нишевые экспертизы</TabsTrigger>
           <TabsTrigger value="geo-rates">Ставки</TabsTrigger>
           <TabsTrigger value="invitation-network">Сеть приглашений</TabsTrigger>
+          <TabsTrigger value="work-format">Формат работы</TabsTrigger>
         </TabsList>
         <TabsContent value="general-activity" className="space-y-4">
           <GeneralActivityView data={data} />
@@ -71,6 +73,9 @@ export default function Dashboard({ initialData }: DashboardProps) {
         </TabsContent>
         <TabsContent value="invitation-network" className="space-y-4">
           <InvitationNetworkView data={data} />
+        </TabsContent>
+        <TabsContent value="work-format" className="space-y-4">
+          <WorkFormatView data={data} />
         </TabsContent>
       </Tabs>
     </div>

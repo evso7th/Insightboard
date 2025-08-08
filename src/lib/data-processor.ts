@@ -531,7 +531,7 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     ? Object.entries(inviteeCounts).reduce((a, b) => a[1] > b[1] ? a : b)[0]
     : 'N/A';
 
-  const totalParticipants = new Set([...invitationLinks.map(d => d.from), ...invitationLinks.map(d => d.to)]).size;
+  const totalParticipants = new Set([...invitationLinks.map(d => d.from.toLowerCase()), ...invitationLinks.map(d => d.to.toLowerCase())]).size;
   const averageInvitations = totalParticipants > 0 ? invitationLinks.length / totalParticipants : 0;
   
   const topInvitersChartData = Object.entries(inviterCounts)
@@ -559,4 +559,55 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     topInviteesChartData
   };
 };
-    
+
+// 7. Work Format
+const processFormat = (formatString: string): string[] => {
+    if (!formatString) return [];
+    return String(formatString).toLowerCase().split(/[,/]/).map(f => f.trim()).filter(f => f && f.length > 0);
+};
+
+export const getWorkFormatAnalysis = (data: MessageData[]) => {
+    if (!data || data.length === 0) {
+        return {
+            topDemandedFormat: 'N/A',
+            topOfferedFormat: 'N/A',
+            formatData: [],
+            chartData: []
+        };
+    }
+
+    const formats: { [key: string]: { demand: number; supply: number } } = {};
+
+    data.forEach(item => {
+        const formatList = processFormat(item['Формат']);
+        const eventType = String(item['Тип события']).trim().toLowerCase();
+
+        formatList.forEach(format => {
+            if (!formats[format]) {
+                formats[format] = { demand: 0, supply: 0 };
+            }
+            if (eventType === 'спрос') {
+                formats[format].demand++;
+            } else if (eventType === 'предложение') {
+                formats[format].supply++;
+            }
+        });
+    });
+
+    const formatData = Object.entries(formats).map(([format, { demand, supply }]) => ({
+        format,
+        demand,
+        supply,
+        balance: demand - supply
+    })).sort((a, b) => (b.demand + b.supply) - (a.demand + a.supply));
+
+    const topDemanded = [...formatData].sort((a, b) => b.demand - a.demand)[0]?.format || 'N/A';
+    const topOffered = [...formatData].sort((a, b) => b.supply - a.supply)[0]?.format || 'N/A';
+
+    return {
+        topDemandedFormat: topDemanded,
+        topOfferedFormat: topOffered,
+        formatData,
+        chartData: formatData.slice(0, 15)
+    };
+};
