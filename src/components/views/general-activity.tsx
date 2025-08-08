@@ -17,26 +17,25 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const [selectedParticipant, setSelectedParticipant] = useState<string | null>(null);
 
   const { participantsWithCounts } = useMemo(() => getGeneralActivityMetrics(data), [data]);
-
+  
   const {
     totalEvents,
     offers,
     demands,
     activityByDate,
     latestEvents,
-    top10Participants
+    top10Participants,
   } = useMemo(() => {
-    const filtered = selectedParticipant
+    const filteredData = selectedParticipant
       ? data.filter(d => d['Отправитель'] === selectedParticipant)
       : data;
-    
-    const metrics = getParticipantMetrics(filtered);
-    
-    const top10 = getGeneralActivityMetrics(filtered).top10Participants;
+      
+    const participantMetrics = getParticipantMetrics(filteredData);
+    const generalMetrics = getGeneralActivityMetrics(filteredData);
 
     return {
-      ...metrics,
-      top10Participants: top10,
+      ...participantMetrics,
+      top10Participants: generalMetrics.top10Participants,
     };
   }, [data, selectedParticipant]);
   
@@ -58,7 +57,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   
   return (
     <div className="flex flex-col gap-4 md:gap-8">
-      {/* KPI cards and participant selector */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard title="Общее число событий" value={totalEvents} icon={BarChart} />
         <KpiCard title="Количество предложений" value={offers} icon={Briefcase} />
@@ -68,7 +66,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
             <CardTitle className="text-sm font-medium">Активный участник</CardTitle>
           </CardHeader>
           <CardContent>
-            <Select onValueChange={handleParticipantChange} defaultValue="all">
+            <Select onValueChange={handleParticipantChange} value={selectedParticipant || 'all'}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Выберите участника" />
               </SelectTrigger>
@@ -88,28 +86,29 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
       
-      {/* Chart Container */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
-        </CardHeader>
-        <CardContent className="h-[350px] w-full pl-2">
-          <ChartContainer config={chartConfig} className="h-full w-full">
-            <LineChart data={activityByDate} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
-              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-              <Tooltip
-                content={<ChartTooltipContent indicator="dot" />}
-                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
-              />
-              <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
-            </LineChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <div className="mb-4 md:mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[350px] w-full pl-2">
+            <ChartContainer config={chartConfig} className="h-full w-full">
+              <LineChart data={activityByDate} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip
+                  content={<ChartTooltipContent indicator="dot" />}
+                  cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
+                />
+                <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-4 md:mb-8">
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
@@ -126,7 +125,11 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                   </TableHeader>
                   <TableBody>
                     {top10Participants.map((p) => (
-                      <TableRow key={p.name}>
+                      <TableRow 
+                        key={p.name}
+                        onClick={() => handleParticipantChange(p.name)}
+                        className={`cursor-pointer ${selectedParticipant === p.name ? 'bg-muted/50' : ''}`}
+                      >
                         <TableCell className="font-medium">{p.name}</TableCell>
                         <TableCell className="text-right">{p.count}</TableCell>
                       </TableRow>
@@ -176,5 +179,3 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-    
