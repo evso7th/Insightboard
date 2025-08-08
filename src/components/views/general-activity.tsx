@@ -6,17 +6,25 @@ import { getGeneralActivityMetrics } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
+
+const formatDateForChart = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}.${month}.${year}`;
+};
+
 
 export function GeneralActivityView({ data }: { data: MessageData[] }) {
   const { totalEvents, offers, demands, invitations, topParticipant, activityByDate, latestEvents } = getGeneralActivityMetrics(data);
 
   const chartData = activityByDate.map(d => ({
     ...d, 
-    date: d.dateObj?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || d.date
+    date: d.dateObj ? formatDateForChart(d.dateObj) : d.date
   }));
 
   const aiInput = {
@@ -95,4 +103,3 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
