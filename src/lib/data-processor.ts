@@ -225,56 +225,69 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 
 
 // 3. Activity by Companies
+// List of terms that are likely roles/tech and not author names.
+const IGNORE_LIST = new Set(['qa', 'c#', 'devops', 'python', 'react', 'php', 'linux', 'vue', 'go', 'backend', 'frontend', 'analyst']);
+
 export const getCompanyActivity = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
 
-  const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
+  const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; originalName: string } } = {};
 
   data.forEach(item => {
-    const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
-    const author = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
-
-    let participantName: string;
+    let originalName: string;
     let isAuthor = false;
 
-    if (!originalCompany || originalCompany === '-' || originalCompany.toLowerCase() === 'n/a' || originalCompany.toLowerCase() === 'na') {
-      participantName = author;
+    const companyName = item['Компания'] ? String(item['Компания']).trim() : '';
+    const authorName = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
+    
+    if (!companyName || companyName === '-' || companyName.toLowerCase() === 'n/a' || companyName.toLowerCase() === 'na') {
+      originalName = authorName;
       isAuthor = true;
     } else {
-      participantName = originalCompany;
+      originalName = companyName;
     }
 
-    if (participantName) {
-      if (!participants[participantName]) {
-        participants[participantName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthor };
-      }
-      
-      // If a participant is found as a company, it should not be an author.
-      if (!isAuthor && participants[participantName].isAuthor) {
-          participants[participantName].isAuthor = false;
-      }
-      
-      const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
-      if (eventType === 'предложение') {
-        participants[participantName].offers++;
-      } else if (eventType === 'спрос') {
-        participants[participantName].demands++;
-      }
-      
-      const roleList = processRoles(item['Роль']);
-      roleList.forEach(role => {
-        if(role) participants[participantName].roles.add(role)
-      });
+    if (!originalName) return;
+
+    // Filter out participants if they are authors and their name is in the ignore list.
+    const key = originalName.toLowerCase();
+    if (isAuthor && IGNORE_LIST.has(key.split(/[,/]/)[0].trim())) {
+      return;
     }
+
+    if (!participants[key]) {
+      participants[key] = { offers: 0, demands: 0, roles: new Set(), originalName: originalName };
+    }
+    
+    // Always prefer the non-author name if a participant appears as both
+    if (!isAuthor && participants[key].originalName.toLowerCase() !== originalName.toLowerCase()) {
+        participants[key].originalName = originalName;
+    }
+    
+    const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+    if (eventType === 'предложение') {
+      participants[key].offers++;
+    } else if (eventType === 'спрос') {
+      participants[key].demands++;
+    }
+    
+    const roleList = processRoles(item['Роль']);
+    roleList.forEach(role => {
+      if(role) participants[key].roles.add(role)
+    });
   });
 
-  const allParticipants = Object.entries(participants).map(([name, data]) => ({
-    name,
-    offers: data.offers,
-    demands: data.demands,
-    uniqueRoles: data.roles.size,
-    isAuthor: data.isAuthor,
-  }));
+  const allParticipants = Object.entries(participants).map(([key, data]) => {
+      const companyInSheet = String(key).toLowerCase();
+      const isActuallyAuthor = !data.originalName.includes(companyInSheet)
+      return {
+        name: data.originalName,
+        offers: data.offers,
+        demands: data.demands,
+        uniqueRoles: data.roles.size,
+        isAuthor: isActuallyAuthor
+      };
+  });
   
   const realCompanies = allParticipants.filter(p => !p.isAuthor);
   const authorsAsCompanies = allParticipants.filter(p => p.isAuthor);
@@ -289,13 +302,11 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const topOfferingAuthor = [...authorsAsCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingAuthor = [...authorsAsCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
   
-  const sortedCompaniesForChart = realCompanies
+  const sortedByOffers = companyData
+    .filter(p => p.offers > 0)
     .sort((a, b) => b.offers - a.offers);
 
-  const sortedAuthorsForChart = authorsAsCompanies
-    .sort((a, b) => b.offers - a.offers);
-
-  const top20CompanyChart = [...sortedCompaniesForChart, ...sortedAuthorsForChart]
+  const top20CompanyChart = sortedByOffers
     .slice(0, 20)
     .sort((a,b) => a.offers - b.offers);
 
@@ -423,9 +434,11 @@ const parseRate = (rate: any): number[] => {
     const strRate = String(rate).replace(/\s/g, '').toLowerCase();
 
     if (!/\d/.test(strRate)) return [];
-
+    
+    // Split by common range delimiters
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
+    // Filter out NaN and unreasonable values
     return numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
 };
 
@@ -465,7 +478,7 @@ export const getGeoAndRates = (data: MessageData[]) => {
       count: rates.length,
     };
   }).filter((item): item is NonNullable<typeof item> => item !== null)
-    .sort((a,b) => b.averageRate - a.averageRate);
+    .sort((a,b) => b.count - a.count);
   
   return {
     validRatesCount: allRates.length,
@@ -502,6 +515,3 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks.filter(l => l.from && l.to),
   };
 };
-
-
-    
