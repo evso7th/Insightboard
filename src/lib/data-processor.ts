@@ -492,25 +492,41 @@ export const getGeoAndRates = (data: MessageData[]) => {
 export const getInvitationNetwork = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
   
-  // Look for connections in all rows, not just ones with event type 'invitation'
-  const invitations = data.filter(item => item['Связь (from → to)']);
-
-  const invitationLinks = invitations
+  const invitationLinks = data
     .map(item => {
-        const fromTo = String(item['Связь (from → to)']);
-        const [from, to] = fromTo.includes('->') ? fromTo.split('->').map(s => s.trim()) : [fromTo, ''];
-        return { from, to, date: item['Дата'] };
-    })
-    .filter(link => link.from && link.to); // Ensure both from and to are present
+      const fromTo = item['Связь (from → to)'];
+      if (!fromTo || typeof fromTo !== 'string') {
+        return null;
+      }
+      
+      // Use a regex that can handle different arrow-like characters
+      const parts = String(fromTo).split(/->|→/);
+      
+      if (parts.length !== 2) {
+        return null;
+      }
 
-  if (invitationLinks.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
+      const from = parts[0].trim();
+      const to = parts[1].trim();
+      
+      if (!from || !to) {
+        return null;
+      }
+      
+      return { from, to, date: item['Дата'] };
+    })
+    .filter((link): link is NonNullable<typeof link> => link !== null);
+
+  if (invitationLinks.length === 0) {
+    return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
+  }
 
   const inviterCounts = countBy(invitationLinks, 'from');
   const topInviter = Object.keys(inviterCounts).length > 0
     ? Object.keys(inviterCounts).reduce((a, b) => inviterCounts[a] > inviterCounts[b] ? a : b, 'N/A')
     : 'N/A';
 
-  const totalParticipants = new Set(data.map(d => d['Отправитель'])).size;
+  const totalParticipants = new Set(data.map(d => d['Отправитель']).filter(Boolean)).size;
   const averageInvitations = totalParticipants > 0 ? invitationLinks.length / totalParticipants : 0;
   
   const topInvitersChartData = Object.entries(inviterCounts)
@@ -523,7 +539,7 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     topInviter,
     totalInvitations: invitationLinks.length,
     averageInvitations,
-    networkData: invitationLinks.filter(l => l.from && l.to),
+    networkData: invitationLinks,
     topInvitersChartData
   };
 };
