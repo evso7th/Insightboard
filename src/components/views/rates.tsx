@@ -44,7 +44,7 @@ export function RatesView({ data }: { data: MessageData[] }) {
                         <BarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 50 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} interval={0}/>
-                            <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={['dataMin - 1000', 'auto']} />
+                            <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={[0, 'auto']} />
                             <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
                             <Bar dataKey="averageRate" fill="hsl(var(--chart-2))" name="Сред. ставка" radius={[4, 4, 0, 0]}>
                                 <LabelList dataKey="averageRate" position="top" offset={5} fontSize={10} fill="hsl(var(--foreground))" formatter={(value: number) => value.toLocaleString()} />
@@ -90,3 +90,4 @@ export function RatesView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
