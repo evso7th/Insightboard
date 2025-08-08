@@ -1,6 +1,6 @@
 
 'use client';
-import { Globe, RussianRuble, BarChart as BarChartIcon, PieChartIcon } from "lucide-react";
+import { Globe, RussianRuble, BarChart as BarChartIcon } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeoAndRates } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
@@ -46,7 +46,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
           <CardTitle>Распределение по локациям</CardTitle>
           <CardDescription>Топ-5 локаций, остальные сгруппированы в "Другие"</CardDescription>
         </CardHeader>
-        <CardContent className="h-[350px] w-full flex items-center justify-center pl-2">
+        <CardContent className="h-[350px] w-full pl-2">
           {geoChartData && geoChartData.length > 0 ? (
             <ChartContainer config={chartConfig}>
               <ResponsiveContainer width="100%" height="100%">
@@ -62,9 +62,11 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
               </ResponsiveContainer>
             </ChartContainer>
           ) : (
-            <div className="text-center text-muted-foreground">
-              <BarChartIcon className="mx-auto h-12 w-12 mb-4" />
-              <p>Нет данных для отображения диаграммы.</p>
+            <div className="text-center text-muted-foreground flex items-center justify-center h-full">
+              <div>
+                <BarChartIcon className="mx-auto h-12 w-12 mb-4" />
+                <p>Нет данных для отображения диаграммы.</p>
+              </div>
             </div>
           )}
         </CardContent>
@@ -127,3 +129,6 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
+
+
+    

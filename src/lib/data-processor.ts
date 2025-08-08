@@ -420,18 +420,14 @@ export const getNicheExpertise = (data: MessageData[]) => {
 const parseRate = (rate: any): number[] => {
     if (rate === null || rate === undefined) return [];
     
-    const strRate = String(rate).replace(/ /g, '').toLowerCase();
+    const strRate = String(rate).replace(/\s/g, '').toLowerCase();
 
     if (!/\d/.test(strRate)) return [];
 
-    // Handles ranges like 1600-2500, 1600/2500, etc.
     const numbers = strRate.split(/[-/–—]/).map(s => parseInt(s.replace(/\D/g, ''), 10));
     
-    const validNumbers = numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
-    
-    return validNumbers;
-}
-
+    return numbers.filter(n => !isNaN(n) && n > 100 && n < 100000);
+};
 
 export const getGeoAndRates = (data: MessageData[]) => {
   if (!data || data.length === 0) return { uniqueLocations: 0, validRatesCount: 0, averageRate: 0, geoSplit: [], rateData: [], boxPlotData: [] };
@@ -441,14 +437,13 @@ export const getGeoAndRates = (data: MessageData[]) => {
   const rateByRole: { [key:string]: { rates: number[], geos: Set<string> } } = {};
 
   data.forEach(item => {
-    // Process geography
-    const location = item['Гео / локация'];
-    if (location && String(location).trim()) {
-      const cleanLocation = String(location).trim();
-      locationCounts[cleanLocation] = (locationCounts[cleanLocation] || 0) + 1;
+    const locationValue = item['Гео / локация'];
+    const location = locationValue && String(locationValue).trim() ? String(locationValue).trim() : null;
+    
+    if (location) {
+      locationCounts[location] = (locationCounts[location] || 0) + 1;
     }
 
-    // Process rates
     const rates = parseRate(item['Ставка (руб/ч)']);
     if (rates.length > 0) {
       allRates.push(...rates);
@@ -460,14 +455,13 @@ export const getGeoAndRates = (data: MessageData[]) => {
               rateByRole[role] = { rates: [], geos: new Set() };
           }
           rateByRole[role].rates.push(...rates);
-          if (location && String(location).trim()) rateByRole[role].geos.add(String(location).trim());
+          if (location) rateByRole[role].geos.add(location);
       })
     }
   });
 
   const averageRate = allRates.length > 0 ? allRates.reduce((a, b) => a + b, 0) / allRates.length : 0;
   
-  // Prepare geo data for chart
   const sortedGeo = Object.entries(locationCounts)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
@@ -479,7 +473,6 @@ export const getGeoAndRates = (data: MessageData[]) => {
     geoSplit.push({ name: 'Другие', value: otherGeoCount });
   }
 
-  // Prepare rate data for table
   const rateData = Object.entries(rateByRole).map(([role, data]) => {
     const rates = data.rates;
     if (rates.length === 0) return null;
@@ -500,7 +493,7 @@ export const getGeoAndRates = (data: MessageData[]) => {
     averageRate,
     geoSplit,
     rateData,
-    boxPlotData: rateData.filter(r => r.averageRate > 0).slice(0, 10), // For chart
+    boxPlotData: rateData.filter(r => r.averageRate > 0).slice(0, 10),
   };
 };
 
@@ -531,3 +524,6 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks.filter(l => l.from && l.to),
   };
 };
+
+
+    
