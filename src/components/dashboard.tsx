@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import type { MessageData } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DataUploader } from './data-uploader';
 import { GeneralActivityView } from './views/general-activity';
 import { DemandSupplyView } from './views/demand-supply';
 import { CompanyActivityView } from './views/company-activity';
@@ -26,16 +25,6 @@ export default function Dashboard({ initialData }: DashboardProps) {
   const [activeFileName, setActiveFileName] = useState<string>("TG group parsed.xlsx");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-
-  const handleDataLoaded = (newData: any[], fileName: string) => {
-    if (newData.length > 0 && 'Отправитель' in newData[0] && 'Тип события' in newData[0]) {
-      setData(newData as MessageData[]);
-      setActiveFileName(fileName);
-    } else {
-      console.error("Uploaded data does not match the expected format.");
-       toast({ variant: 'destructive', title: 'Error', description: `Uploaded data does not match the expected format.` });
-    }
-  };
   
   const handleProcessChatlog = async () => {
     setIsProcessing(true);
@@ -90,7 +79,6 @@ export default function Dashboard({ initialData }: DashboardProps) {
                 </Button>
             </div>
             <div className="flex flex-col items-end text-right">
-                <DataUploader onDataLoaded={handleDataLoaded} />
                 <p className="text-xs text-muted-foreground mt-1">
                     Активный файл: <span className="font-semibold">{activeFileName}</span>
                 </p>
