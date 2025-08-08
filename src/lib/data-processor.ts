@@ -366,7 +366,7 @@ export const getNicheExpertise = (data: MessageData[]) => {
   if (!data || data.length === 0) return { uniqueNiches: 0, topNiche: 'N/A', urgentExpertise: 0, nicheData: [] };
 
   const niches: { [key: string]: { count: number; companies: Set<string>; contexts: string[]; urgent: number } } = {};
-  
+
   data.forEach(item => {
     const nicheValue = item['Ниша / уникальная экспертиза'];
     let niche: string;
@@ -376,7 +376,7 @@ export const getNicheExpertise = (data: MessageData[]) => {
     } else {
         niche = String(nicheValue).trim();
     }
-      
+    
     if (!niches[niche]) {
       niches[niche] = { count: 0, companies: new Set(), contexts: [], urgent: 0 };
     }
@@ -421,38 +421,58 @@ export const getNicheExpertise = (data: MessageData[]) => {
 };
 
 // 5. Geography and Rates
+const parseRate = (rate: any): number | null => {
+  if (rate === null || rate === undefined) return null;
+  const num = Number(String(rate).replace(/[^0-9.]/g, ''));
+  return isNaN(num) || num === 0 ? null : num;
+}
+
 export const getGeoAndRates = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { rfShare: 0, averageRate: 0, maxRate: 0, geoSplit: [], rateData: [], boxPlotData: [] };
+  if (!data || data.length === 0) return { uniqueLocations: 0, validRatesCount: 0, averageRate: 0, geoSplit: [], rateData: [], boxPlotData: [] };
 
-  const validRates = data.map(item => item['Ставка (руб/ч)']).filter(rate => rate != null && rate > 0) as number[];
-  const averageRate = validRates.length > 0 ? validRates.reduce((a, b) => a + b, 0) / validRates.length : 0;
-  const maxRate = validRates.length > 0 ? Math.max(...validRates) : 0;
-
-  const geoCounts = data.filter(d => d['Гео / локация']).reduce((acc: { [key: string]: number }, item) => {
-    const value = item['Гео / локация']!;
-    acc[value] = (acc[value] || 0) + 1;
-    return acc;
-  }, {});
-
-  const totalGeo = Object.values(geoCounts).reduce((a: number, b: any) => a + b, 0);
-  const rfShare = totalGeo > 0 ? ((geoCounts['РФ'] || 0) / totalGeo) * 100 : 0;
-
-  const geoSplit = Object.entries(geoCounts).map(([name, value]) => ({ name, value: value as number }));
-
+  const allRates: number[] = [];
+  const locationCounts: { [key: string]: number } = {};
   const rateByRole: { [key: string]: { rates: number[], geos: Set<string> } } = {};
+
   data.forEach(item => {
-    if (item['Роль'] && item['Ставка (руб/ч)'] != null) {
-        const roleList = processRoles(item['Роль']);
-        roleList.forEach(role => {
-            if (!rateByRole[role]) {
-                rateByRole[role] = { rates: [], geos: new Set() };
-            }
-            rateByRole[role].rates.push(item['Ставка (руб/ч)'] as number);
-            if(item['Гео / локация']) rateByRole[role].geos.add(item['Гео / локация']);
-        })
+    // Process geography
+    const location = item['Гео / локация'];
+    if (location && String(location).trim()) {
+      const cleanLocation = String(location).trim();
+      locationCounts[cleanLocation] = (locationCounts[cleanLocation] || 0) + 1;
+    }
+
+    // Process rates
+    const rate = parseRate(item['Ставка (руб/ч)']);
+    if (rate !== null) {
+      allRates.push(rate);
+      
+      const roleList = processRoles(item['Роль']);
+      roleList.forEach(role => {
+          if (!rateByRole[role]) {
+              rateByRole[role] = { rates: [], geos: new Set() };
+          }
+          rateByRole[role].rates.push(rate);
+          if (location) rateByRole[role].geos.add(String(location).trim());
+      })
     }
   });
 
+  const averageRate = allRates.length > 0 ? allRates.reduce((a, b) => a + b, 0) / allRates.length : 0;
+  
+  // Prepare geo data for chart
+  const sortedGeo = Object.entries(locationCounts)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+  
+  const top5Geo = sortedGeo.slice(0, 5);
+  const otherGeoCount = sortedGeo.slice(5).reduce((acc, curr) => acc + curr.value, 0);
+  const geoSplit = [...top5Geo];
+  if (otherGeoCount > 0) {
+    geoSplit.push({ name: 'Другие', value: otherGeoCount });
+  }
+
+  // Prepare rate data for table
   const rateData = Object.entries(rateByRole).map(([role, data]) => {
     const rates = data.rates;
     const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
@@ -461,17 +481,17 @@ export const getGeoAndRates = (data: MessageData[]) => {
       averageRate: Math.round(avg),
       minRate: Math.min(...rates),
       maxRate: Math.max(...rates),
-      geo: Array.from(data.geos).join(', '),
+      geo: Array.from(data.geos).join(', ') || 'N/A',
     };
   }).sort((a,b) => b.averageRate - a.averageRate);
   
   return {
-    rfShare,
+    uniqueLocations: Object.keys(locationCounts).length,
+    validRatesCount: allRates.length,
     averageRate,
-    maxRate,
     geoSplit,
     rateData,
-    boxPlotData: rateData.slice(0, 10), // For chart
+    boxPlotData: rateData.filter(r => r.averageRate > 0).slice(0, 10), // For chart
   };
 };
 
