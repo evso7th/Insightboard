@@ -1,5 +1,6 @@
 
 'use client';
+import { useMemo } from "react";
 import { BrainCircuit, Star, Zap } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getNicheExpertise } from "@/lib/data-processor";
@@ -10,7 +11,6 @@ import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
-import { useMemo } from "react";
 
 const CustomTick = (props: any) => {
   const { x, y, payload } = props;
