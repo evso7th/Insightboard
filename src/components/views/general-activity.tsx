@@ -30,7 +30,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-      <div className="grid gap-4 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard title="Общее число событий" value={totalEvents} icon={BarChart} />
         <KpiCard title="Количество предложений" value={offers} icon={Briefcase} />
         <KpiCard title="Количество запросов" value={demands} icon={Users} />
@@ -73,8 +73,8 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {latestEvents.map((event) => (
-                  <TableRow key={event['№ стр.']}>
+                {latestEvents.map((event, index) => (
+                  <TableRow key={`${event['№ стр.']}-${index}`}>
                     <TableCell>{event['Дата']}</TableCell>
                     <TableCell>{event['Отправитель']}</TableCell>
                     <TableCell>{event['Тип события']}</TableCell>
