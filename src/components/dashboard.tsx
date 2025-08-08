@@ -29,19 +29,23 @@ export default function Dashboard({ initialData }: DashboardProps) {
   const handleProcessChatlog = async () => {
     setIsProcessing(true);
     setActiveFileName("chatlog.txt (AI)");
-    toast({ title: 'AI Processing Started', description: 'The AI is analyzing chatlog.txt. This may take a while...' });
+    const { dismiss } = toast({ 
+        title: 'Запущена обработка ИИ', 
+        description: 'ИИ анализирует chatlog.txt. Это может занять некоторое время...' 
+    });
     try {
       const result = await processChatlogFile();
       if (result.error) {
-        toast({ variant: 'destructive', title: 'Error', description: result.error });
+        toast({ variant: 'destructive', title: 'Ошибка', description: result.error });
       } else if (result.data) {
         setData(result.data);
-        toast({ title: 'Success', description: 'AI successfully processed the text file.' });
+        toast({ title: 'Успех', description: 'ИИ успешно обработал текстовый файл.' });
       }
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Error', description: `AI failed to process the file: ${error.message}` });
+      toast({ variant: 'destructive', title: 'Критическая ошибка', description: `Не удалось обработать файл: ${error.message}` });
       console.error('AI Processing Error:', error);
     } finally {
+      dismiss();
       setIsProcessing(false);
     }
   };
@@ -52,9 +56,9 @@ export default function Dashboard({ initialData }: DashboardProps) {
         const defaultData = await loadDefaultXlsxFile();
         setData(defaultData);
         setActiveFileName("TG group parsed.xlsx");
-        toast({ title: 'Data Loaded', description: 'Switched back to the default XLSX data.' });
+        toast({ title: 'Данные загружены', description: 'Источник данных переключен на TG group parsed.xlsx.' });
     } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Error', description: `Failed to load default data: ${error.message}` });
+        toast({ variant: 'destructive', title: 'Ошибка', description: `Не удалось загрузить данные по умолчанию: ${error.message}` });
     } finally {
         setIsProcessing(false);
     }
