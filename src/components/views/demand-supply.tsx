@@ -85,15 +85,15 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
         <CardContent className="h-[350px] w-full pl-2">
           {selectedRole ? (
              <ChartContainer config={chartConfig} className="h-full w-full">
-              <LineChart data={roleYearlyData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+              <BarChart data={roleYearlyData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false}/>
                 <XAxis dataKey="year" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip content={<ChartTooltipContent />} cursor={true} />
+                <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                 <Legend wrapperStyle={{fontSize: "12px"}}/>
-                <Line type="monotone" dataKey="demand" stroke="hsl(var(--primary))" strokeWidth={2} name="Спрос" />
-                <Line type="monotone" dataKey="supply" stroke="hsl(var(--accent))" strokeWidth={2} name="Предложение"/>
-              </LineChart>
+                <Bar dataKey="demand" fill="hsl(var(--primary))" name="Спрос" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="supply" fill="hsl(var(--accent))" name="Предложение" radius={[4, 4, 0, 0]} />
+              </BarChart>
             </ChartContainer>
           ) : (
             <ChartContainer config={chartConfig} className="h-full w-full">
