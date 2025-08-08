@@ -51,7 +51,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           <CardTitle>ТОП-10 компаний по числу предложений</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
-          <ChartContainer config={chartConfig}>
+          <ChartContainer config={chartConfig} className="h-full w-full">
             <BarChart data={top10CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
