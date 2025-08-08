@@ -41,7 +41,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         <CardHeader>
           <CardTitle>Активность по дням</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px] w-full">
+        <CardContent className="h-[350px] w-full">
           <ChartContainer config={chartConfig}>
             <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -62,7 +62,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
           <CardTitle>Последние 20 событий</CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[300px]">
+          <ScrollArea className="h-[350px]">
             <Table>
               <TableHeader>
                 <TableRow>

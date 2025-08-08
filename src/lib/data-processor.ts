@@ -12,6 +12,22 @@ const countBy = (data: any[], key: string) => {
   }, {});
 };
 
+// Helper to parse DD.MM.YYYY date strings
+const parseDate = (dateString: string): Date | null => {
+    if (!dateString || typeof dateString !== 'string') return null;
+    const parts = dateString.split('.');
+    if (parts.length === 3) {
+        // new Date(year, monthIndex, day)
+        const date = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+        // Check if the parsed date is valid
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
+    }
+    return null;
+};
+
+
 // 1. General Activity
 export const getGeneralActivityMetrics = (data: MessageData[]) => {
   if (!data || data.length === 0) {
@@ -30,7 +46,13 @@ export const getGeneralActivityMetrics = (data: MessageData[]) => {
   const participantActivity = countBy(data, 'Отправитель');
   const topParticipant = Object.keys(participantActivity).reduce((a, b) => participantActivity[a] > participantActivity[b] ? a : b, 'N/A');
   
-  const activityByDate = Object.entries(countBy(data, 'Дата')).map(([date, count]) => ({ date, count })).sort((a,b) => new Date(a.date.split('.').reverse().join('-')).getTime() - new Date(b.date.split('.').reverse().join('-')).getTime());
+  const activityByDate = Object.entries(countBy(data.filter(d => d['Дата']), 'Дата'))
+    .map(([date, count]) => ({ date, count, dateObj: parseDate(date) }))
+    .filter(item => item.dateObj !== null)
+    // @ts-ignore
+    .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
+    .map(({date, count}) => ({ date, count }));
+
 
   return {
     totalEvents: data.length,
@@ -92,7 +114,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
   data.forEach(item => {
     const company = item['Компания'] ? String(item['Компания']).trim() : '';
     // Filter out empty or placeholder company names
-    if (company && company !== '-') {
+    if (company && company !== '-' && company.toLowerCase() !== 'n/a') {
       if (!companies[company]) {
         companies[company] = { offers: 0, demands: 0, roles: new Set() };
       }
@@ -113,9 +135,9 @@ export const getCompanyActivity = (data: MessageData[]) => {
     offers: data.offers,
     demands: data.demands,
     uniqueRoles: data.roles.size,
-  })).sort((a,b) => b.offers - a.offers);
+  })).sort((a,b) => (b.offers + b.demands) - (a.offers + a.demands));
 
-  const topOfferingCompany = companyData[0]?.name || 'N/A';
+  const topOfferingCompany = [...companyData].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingCompany = [...companyData].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
 
   return {
@@ -123,7 +145,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
     topDemandingCompany,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
-    top10CompanyChart: companyData.slice(0, 10),
+    top10CompanyChart: [...companyData].sort((a,b) => b.offers - a.offers).slice(0, 10),
   };
 };
 
