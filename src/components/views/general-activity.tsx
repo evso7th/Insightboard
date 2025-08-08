@@ -76,93 +76,88 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
       
-      {/* Main content area with chart and tables */}
+      {/* Chart Container */}
+      <div>
+         <Card>
+          <CardHeader>
+            <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[350px] w-full pl-2">
+            <ChartContainer config={chartConfig}>
+              <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip
+                  content={<ChartTooltipContent indicator="dot" />}
+                  cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
+                />
+                <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Tables Container */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Chart Container */}
-        <div className="lg:col-span-2">
-           <Card>
+        <div className="lg:col-span-1">
+          <Card>
             <CardHeader>
-              <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
+              <CardTitle>ТОП-10 Участников</CardTitle>
             </CardHeader>
-            <CardContent className="h-[350px] w-full pl-2">
-              <ChartContainer config={chartConfig}>
-                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false}/>
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip
-                    content={<ChartTooltipContent indicator="dot" />}
-                    cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3' }}
-                  />
-                  <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} name="События"/>
-                </LineChart>
-              </ChartContainer>
+            <CardContent>
+              <ScrollArea className="h-[240px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Участник</TableHead>
+                      <TableHead className="text-right">События</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {top10Participants.map((p) => (
+                      <TableRow key={p.name}>
+                        <TableCell className="font-medium">{p.name}</TableCell>
+                        <TableCell className="text-right">{p.count}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             </CardContent>
           </Card>
         </div>
-        
-        {/* Tables Container */}
-        <div className="flex flex-col gap-4 md:gap-8 lg:col-span-1">
-          {/* Top 10 Participants Container */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>ТОП-10 Участников</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[120px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Участник</TableHead>
-                        <TableHead className="text-right">События</TableHead>
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Последние 20 событий {selectedParticipant ? `- ${selectedParticipant}`: ''}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[240px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Дата</TableHead>
+                      <TableHead>Отправитель</TableHead>
+                      <TableHead>Тип</TableHead>
+                      <TableHead>Роль</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {latestEvents.map((event, index) => (
+                      <TableRow key={`${event['№ стр.']}-${index}`}>
+                        <TableCell>{event['Дата']}</TableCell>
+                        <TableCell>{event['Отправитель']}</TableCell>
+                        <TableCell>{event['Тип события']}</TableCell>
+                        <TableCell>{event['Роль']}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {top10Participants.map((p) => (
-                        <TableRow key={p.name}>
-                          <TableCell className="font-medium">{p.name}</TableCell>
-                          <TableCell className="text-right">{p.count}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-          {/* Latest 20 Events Container */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Последние 20 событий {selectedParticipant ? `- ${selectedParticipant}`: ''}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[140px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Дата</TableHead>
-                        <TableHead>Отправитель</TableHead>
-                        <TableHead>Тип</TableHead>
-                        <TableHead>Роль</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {latestEvents.map((event, index) => (
-                        <TableRow key={`${event['№ стр.']}-${index}`}>
-                          <TableCell>{event['Дата']}</TableCell>
-                          <TableCell>{event['Отправитель']}</TableCell>
-                          <TableCell>{event['Тип события']}</TableCell>
-                          <TableCell>{event['Роль']}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
