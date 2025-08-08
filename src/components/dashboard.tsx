@@ -13,9 +13,9 @@ import { RatesView } from './views/rates';
 import { InvitationNetworkView } from './views/invitation-network';
 import { WorkFormatView } from './views/work-format';
 import { Button } from './ui/button';
-import { Cpu, FileXls, Loader2 } from 'lucide-react';
-import { loadSampleData, processChatlog } from '@/lib/data';
+import { Cpu, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { processChatlogFile, loadDefaultXlsxFile } from '@/app/actions';
 
 interface DashboardProps {
   initialData: MessageData[];
@@ -42,7 +42,7 @@ export default function Dashboard({ initialData }: DashboardProps) {
     setActiveFileName("chatlog.txt (AI)");
     toast({ title: 'AI Processing Started', description: 'The AI is analyzing chatlog.txt. This may take a while...' });
     try {
-      const result = await processChatlog();
+      const result = await processChatlogFile();
       if (result.error) {
         toast({ variant: 'destructive', title: 'Error', description: result.error });
       } else if (result.data) {
@@ -58,12 +58,17 @@ export default function Dashboard({ initialData }: DashboardProps) {
   };
 
   const handleLoadXlsx = async () => {
-    // This function re-loads the initial data from the server.
-    // In a real app, you might re-fetch it or have it stored differently.
-    const defaultData = await (loadSampleData() as any);
-    setData(defaultData);
-    setActiveFileName("TG group parsed.xlsx");
-    toast({ title: 'Data Loaded', description: 'Switched back to the default XLSX data.' });
+    setIsProcessing(true);
+    try {
+        const defaultData = await loadDefaultXlsxFile();
+        setData(defaultData);
+        setActiveFileName("TG group parsed.xlsx");
+        toast({ title: 'Data Loaded', description: 'Switched back to the default XLSX data.' });
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error', description: `Failed to load default data: ${error.message}` });
+    } finally {
+        setIsProcessing(false);
+    }
   }
 
   return (
@@ -73,7 +78,7 @@ export default function Dashboard({ initialData }: DashboardProps) {
         <div className="flex items-center gap-4">
              <div className="flex items-center gap-2">
                  <Button onClick={handleLoadXlsx} variant="outline" size="sm" disabled={isProcessing}>
-                    <FileXls className="mr-2 h-4 w-4"/> Загрузить из XLSX
+                    <FileSpreadsheet className="mr-2 h-4 w-4"/> Загрузить из XLSX
                  </Button>
                 <Button onClick={handleProcessChatlog} variant="outline" size="sm" disabled={isProcessing}>
                     {isProcessing ? (

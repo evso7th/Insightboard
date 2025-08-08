@@ -1,5 +1,3 @@
-
-'use server'
 import type { MessageData } from '@/types';
 import fs from 'fs';
 import path from 'path';
@@ -14,7 +12,7 @@ const formatDate = (date: Date) => {
     return `${day}.${month}.${year}`;
 };
 
-export const loadSampleData = (): MessageData[] => {
+export const loadSampleData = async (): Promise<MessageData[]> => {
   try {
     const xlsxFilePath = path.join(process.cwd(), 'TG group parsed.xlsx');
     const buf = fs.readFileSync(xlsxFilePath);
