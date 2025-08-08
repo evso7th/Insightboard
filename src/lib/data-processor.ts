@@ -228,18 +228,23 @@ export const getRoleYearlyDemandSupply = (data: MessageData[], role: string) => 
 export const getCompanyActivity = (data: MessageData[]) => {
   if (!data || data.length === 0) return { topOfferingCompany: 'N/A', topDemandingCompany: 'N/A', topOfferingAuthor: 'N/A', topDemandingAuthor: 'N/A', totalMentions: 0, companyData: [], top20CompanyChart: [] };
   
+  const excludedAuthors = ['QA'];
+  const filteredData = data.filter(item => !excludedAuthors.includes(item['Отправитель']));
+
   const participants: { [key: string]: { offers: number; demands: number; roles: Set<string>; isAuthor: boolean } } = {};
 
-  data.forEach(item => {
+  filteredData.forEach(item => {
     const originalCompany = item['Компания'] ? String(item['Компания']).trim() : '';
     const author = item['Отправитель'] ? String(item['Отправитель']).trim() : '';
 
-    let participantName = originalCompany;
+    let participantName: string;
     let isAuthor = false;
 
-    if (!participantName || participantName === '-' || participantName.toLowerCase() === 'n/a' || participantName.toLowerCase() === 'na') {
+    if (!originalCompany || originalCompany === '-' || originalCompany.toLowerCase() === 'n/a' || originalCompany.toLowerCase() === 'na') {
       participantName = author;
       isAuthor = true;
+    } else {
+      participantName = originalCompany;
     }
 
     if (participantName) {
@@ -247,8 +252,6 @@ export const getCompanyActivity = (data: MessageData[]) => {
         participants[participantName] = { offers: 0, demands: 0, roles: new Set(), isAuthor: isAuthor };
       }
       
-      // If we see a participant that was previously an author now has a company,
-      // we mark them as not an author. Company takes precedence.
       if (!isAuthor && participants[participantName].isAuthor) {
           participants[participantName].isAuthor = false;
       }
@@ -288,10 +291,8 @@ export const getCompanyActivity = (data: MessageData[]) => {
   const topOfferingAuthor = [...authorsAsCompanies].sort((a,b) => b.offers - a.offers)[0]?.name || 'N/A';
   const topDemandingAuthor = [...authorsAsCompanies].sort((a,b) => b.demands - a.demands)[0]?.name || 'N/A';
 
-  const sortedForChart = [
-      ...realCompanies.sort((a, b) => b.offers - a.offers),
-      ...authorsAsCompanies.sort((a, b) => b.offers - a.offers)
-  ];
+  const sortedCompaniesForChart = [...realCompanies].sort((a, b) => b.offers - a.offers);
+  const sortedAuthorsForChart = [...authorsAsCompanies].sort((a, b) => b.offers - a.offers);
 
   return {
     topOfferingCompany,
@@ -300,7 +301,7 @@ export const getCompanyActivity = (data: MessageData[]) => {
     topDemandingAuthor,
     totalMentions: companyData.reduce((sum, c) => sum + c.offers + c.demands, 0),
     companyData,
-    top20CompanyChart: sortedForChart.slice(0, 20),
+    top20CompanyChart: [...sortedCompaniesForChart, ...sortedAuthorsForChart].slice(0, 20),
   };
 };
 
@@ -484,4 +485,3 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     networkData: invitationLinks,
   };
 };
-

@@ -1,16 +1,17 @@
 
 'use client';
 import { useState, useMemo } from 'react';
-import { Building, Users, Briefcase, ArrowLeft, User, UserCheck } from "lucide-react";
+import { Building, Users, Briefcase } from "lucide-react";
 import { getCompanyActivity, getCompanyDetail } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Legend } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from '../ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const CustomTick = (props: any) => {
   const { x, y, payload, data } = props;
@@ -106,14 +107,13 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-5">
             <div className="h-[400px] w-full md:col-span-3">
-              <ChartContainer config={chartConfig}>
+               <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={companyDetails} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="role" tick={<XAxisRoleTick/>} height={60} interval={0} />
                     <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                     <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                    <Legend wrapperStyle={{fontSize: "12px"}}/>
                     <Bar dataKey="demands" fill="hsl(var(--accent))" name="Спрос" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -152,7 +152,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-3">
-        <Card>
+         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Топ по предложениям</CardTitle>
                 <Briefcase className="h-4 w-4 text-muted-foreground" />
