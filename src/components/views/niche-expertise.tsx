@@ -53,14 +53,14 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 md:gap-8">
+    <div className="flex flex-col gap-8">
       <div className="grid gap-4 sm:grid-cols-3">
         <KpiCard title="Число уникальных ниш" value={uniqueNiches} icon={BrainCircuit} description="Без учета категории '(Не указана)'"/>
         <KpiCard title="Топ-1 ниша по частоте" value={topNiche} icon={Star} />
         <KpiCard title="Экспертиз с высокой срочностью" value={urgentExpertise} icon={Zap} />
       </div>
       
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2">
             <CardHeader>
             <CardTitle>Топ-15 ниш по количеству упоминаний</CardTitle>
