@@ -9,7 +9,7 @@ import { GeneralActivityView } from './views/general-activity';
 import { DemandSupplyView } from './views/demand-supply';
 import { CompanyActivityView } from './views/company-activity';
 import { NicheExpertiseView } from './views/niche-expertise';
-import { GeoRatesView } from './views/geo-rates';
+import { RatesView } from './views/rates';
 import { InvitationNetworkView } from './views/invitation-network';
 
 interface DashboardProps {
@@ -67,7 +67,7 @@ export default function Dashboard({ initialData }: DashboardProps) {
           <NicheExpertiseView data={data} />
         </TabsContent>
         <TabsContent value="geo-rates" className="space-y-4">
-          <GeoRatesView data={data} />
+          <RatesView data={data} />
         </TabsContent>
         <TabsContent value="invitation-network" className="space-y-4">
           <InvitationNetworkView data={data} />

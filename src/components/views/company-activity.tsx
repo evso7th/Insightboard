@@ -86,8 +86,8 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
   if (selectedParticipant) {
     return (
       <div className="flex flex-col gap-4 md:gap-8">
-        <div className="mb-4 md:mb-8">
-          <Button onClick={handleBackToOverview} variant="ghost" className="self-start">
+        <div>
+          <Button onClick={handleBackToOverview} variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Вернуться к списку
           </Button>
@@ -153,7 +153,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
 
   return (
     <div className="flex flex-col gap-4 md:gap-8">
-       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4 md:mb-8">
+       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Топ по предложениям</CardTitle>
@@ -190,66 +190,62 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
       
-      <div className="mb-4 md:mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-          <Card className="lg:col-span-2">
-              <CardHeader>
-              <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>
-              <CardDescription>Нажмите на столбец для детализации</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[350px] w-full pl-2">
-              <ChartContainer config={chartConfig}>
-                  <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-                      <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick data={top20CompanyChart} />} tickLine={false} axisLine={false} />
-                      <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                      <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[0, 4, 4, 0]} className="cursor-pointer">
-                      <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
-                      </Bar>
-                  </BarChart>
-                  </ResponsiveContainer>
-              </ChartContainer>
-              </CardContent>
-          </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        <Card className="lg:col-span-2">
+            <CardHeader>
+            <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>
+            <CardDescription>Нажмите на столбец для детализации</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[350px] w-full pl-2">
+            <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                    <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick data={top20CompanyChart} />} tickLine={false} axisLine={false} />
+                    <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                    <Bar dataKey="offers" fill="hsl(var(--primary))" name="Предложения" radius={[0, 4, 4, 0]} className="cursor-pointer">
+                    <LabelList dataKey="offers" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
+                    </Bar>
+                </BarChart>
+                </ResponsiveContainer>
+            </ChartContainer>
+            </CardContent>
+        </Card>
 
-          <Card>
-              <CardHeader>
-              <CardTitle>Активность по компаниям</CardTitle>
-              <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора. Некоторые ники авторов могут совпадать с названиями ролей (например, 'QA').</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[400px]">
-              <ScrollArea className="h-full">
-                  <Table>
-                  <TableHeader>
-                      <TableRow>
-                      <TableHead>Компания</TableHead>
-                      <TableHead>Предложения</TableHead>
-                      <TableHead>Спрос</TableHead>
-                      <TableHead>Уник. роли</TableHead>
-                      </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                      {companyData.map((row) => (
-                      <TableRow key={row.name} onClick={() => handleParticipantSelect(row.name)} className="cursor-pointer">
-                          <TableCell className={row.isAuthor ? '' : 'font-bold'}>{row.name}</TableCell>
-                          <TableCell>{row.offers}</TableCell>
-                          <TableCell>{row.demands}</TableCell>
-                          <TableCell>{row.uniqueRoles}</TableCell>
-                      </TableRow>
-                      ))}
-                  </TableBody>
-                  </Table>
-              </ScrollArea>
-              </CardContent>
-          </Card>
-        </div>
+        <Card>
+            <CardHeader>
+            <CardTitle>Активность по компаниям</CardTitle>
+            <CardDescription className="text-xs">Если компания не обнаружена в исходных данных, выводится имя автора. Некоторые ники авторов могут совпадать с названиями ролей (например, 'QA').</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+            <ScrollArea className="h-full">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Компания</TableHead>
+                    <TableHead>Предложения</TableHead>
+                    <TableHead>Спрос</TableHead>
+                    <TableHead>Уник. роли</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {companyData.map((row) => (
+                    <TableRow key={row.name} onClick={() => handleParticipantSelect(row.name)} className="cursor-pointer">
+                        <TableCell className={row.isAuthor ? '' : 'font-bold'}>{row.name}</TableCell>
+                        <TableCell>{row.offers}</TableCell>
+                        <TableCell>{row.demands}</TableCell>
+                        <TableCell>{row.uniqueRoles}</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </ScrollArea>
+            </CardContent>
+        </Card>
       </div>
 
-      <div className="mb-4 md:mb-8">
-        <AIInsight input={aiInput} />
-      </div>
+      <AIInsight input={aiInput} />
     </div>
   );
 }

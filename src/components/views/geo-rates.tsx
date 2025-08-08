@@ -12,7 +12,7 @@ import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 
 
-export function GeoRatesView({ data }: { data: MessageData[] }) {
+export function RatesView({ data }: { data: MessageData[] }) {
   const { validRatesCount, averageRate, rateData, boxPlotData } = getGeoAndRates(data);
 
   const aiInput = {
@@ -34,7 +34,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
       </div>
       
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mb-4 md:mb-8">
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
          <Card>
             <CardHeader>
             <CardTitle>Средние ставки по ролям (ТОП-10)</CardTitle>
@@ -87,9 +87,7 @@ export function GeoRatesView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
 
-      <div>
-        <AIInsight input={aiInput} />
-      </div>
+      <AIInsight input={aiInput} />
     </div>
   );
 }
