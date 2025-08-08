@@ -49,23 +49,3 @@ export const loadSampleData = async (): Promise<MessageData[]> => {
     return [];
   }
 };
-
-export async function processChatlog(): Promise<{ data?: string, error?: string }> {
-    try {
-        const txtFilePath = path.join(process.cwd(), 'chatlog.txt');
-        const textContent = fs.readFileSync(txtFilePath, 'utf-8');
-        
-        if (!textContent) {
-            return { error: 'chatlog.txt is empty or could not be read.' };
-        }
-
-        return { data: textContent };
-
-    } catch (error: any) {
-        console.error("Error reading 'chatlog.txt':", error);
-        if (error.code === 'ENOENT') {
-             return { error: 'File chatlog.txt not found in the project root.' };
-        }
-        return { error: `An error occurred: ${error.message}` };
-    }
-}

@@ -11,10 +11,7 @@ import { NicheExpertiseView } from './views/niche-expertise';
 import { RatesView } from './views/rates';
 import { InvitationNetworkView } from './views/invitation-network';
 import { WorkFormatView } from './views/work-format';
-import { Button } from './ui/button';
-import { Cpu, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { processChatlogFile, loadDefaultXlsxFile } from '@/app/actions';
 
 interface DashboardProps {
   initialData: MessageData[];
@@ -26,62 +23,11 @@ export default function Dashboard({ initialData }: DashboardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   
-  const handleProcessChatlog = async () => {
-    setIsProcessing(true);
-    setActiveFileName("chatlog.txt (AI)");
-    const { dismiss } = toast({ 
-        title: 'Запущена обработка ИИ', 
-        description: 'ИИ анализирует chatlog.txt. Это может занять некоторое время...' 
-    });
-    try {
-      const result = await processChatlogFile();
-      if (result.error) {
-        toast({ variant: 'destructive', title: 'Ошибка', description: result.error });
-      } else if (result.data) {
-        setData(result.data);
-        toast({ title: 'Успех', description: 'ИИ успешно обработал текстовый файл.' });
-      }
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Критическая ошибка', description: `Не удалось обработать файл: ${error.message}` });
-      console.error('AI Processing Error:', error);
-    } finally {
-      dismiss();
-      setIsProcessing(false);
-    }
-  };
-
-  const handleLoadXlsx = async () => {
-    setIsProcessing(true);
-    try {
-        const defaultData = await loadDefaultXlsxFile();
-        setData(defaultData);
-        setActiveFileName("TG group parsed.xlsx");
-        toast({ title: 'Данные загружены', description: 'Источник данных переключен на TG group parsed.xlsx.' });
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Ошибка', description: `Не удалось загрузить данные по умолчанию: ${error.message}` });
-    } finally {
-        setIsProcessing(false);
-    }
-  }
-
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
         <h1 className="text-3xl font-bold tracking-tight">InsightBoard</h1>
         <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2">
-                 <Button onClick={handleLoadXlsx} variant="outline" size="sm" disabled={isProcessing}>
-                    <FileSpreadsheet className="mr-2 h-4 w-4"/> Обработать TG group parsed.xlsx
-                 </Button>
-                <Button onClick={handleProcessChatlog} variant="outline" size="sm" disabled={isProcessing}>
-                    {isProcessing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Cpu className="mr-2 h-4 w-4"/>
-                    )}
-                    Обработать chatlog.txt
-                </Button>
-            </div>
             <div className="flex flex-col items-end text-right">
                 <p className="text-xs text-muted-foreground mt-1">
                     Активный файл: <span className="font-semibold">{activeFileName}</span>
