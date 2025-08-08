@@ -38,7 +38,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
       
       <Card className="xl:col-span-2">
         <CardHeader>
-          <CardTitle>Карта упоминаний: Ниша × Компания</CardTitle>
+          <CardTitle>Карта упоминаний: Топ-15 ниш × Компании</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] w-full pl-2">
           <ChartContainer config={chartConfig}>
