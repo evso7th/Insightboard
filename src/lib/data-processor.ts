@@ -490,14 +490,24 @@ export const getGeoAndRates = (data: MessageData[]) => {
 
 // 6. Invitation Network
 export const getInvitationNetwork = (data: MessageData[]) => {
-  if (!data || data.length === 0) return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
+  const defaultReturn = { 
+    topInviter: 'N/A', 
+    totalInvitations: 0, 
+    averageInvitations: 0, 
+    networkData: [], 
+    topInvitersChartData: [],
+    topInvitee: 'N/A',
+    inviteeData: [],
+    topInviteesChartData: []
+  };
+
+  if (!data || data.length === 0) return defaultReturn;
   
   const invitationLinks = data
     .map(item => {
       const from = item['Отправитель'];
       const to = item['Связь (from → to)'];
 
-      // We need both 'from' and 'to' to count an invitation
       if (!from || !to || String(to).trim() === '') {
         return null;
       }
@@ -507,15 +517,21 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     .filter((link): link is NonNullable<typeof link> => link !== null);
 
   if (invitationLinks.length === 0) {
-    return { topInviter: 'N/A', totalInvitations: 0, averageInvitations: 0, networkData: [], topInvitersChartData: [] };
+    return defaultReturn;
   }
 
   const inviterCounts = countBy(invitationLinks, 'from');
+  const inviteeCounts = countBy(invitationLinks, 'to');
+
   const topInviter = Object.keys(inviterCounts).length > 0
     ? Object.entries(inviterCounts).reduce((a, b) => a[1] > b[1] ? a : b)[0]
     : 'N/A';
+  
+  const topInvitee = Object.keys(inviteeCounts).length > 0
+    ? Object.entries(inviteeCounts).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+    : 'N/A';
 
-  const totalParticipants = new Set(data.map(d => d['Отправитель']).filter(Boolean)).size;
+  const totalParticipants = new Set([...invitationLinks.map(d => d.from), ...invitationLinks.map(d => d.to)]).size;
   const averageInvitations = totalParticipants > 0 ? invitationLinks.length / totalParticipants : 0;
   
   const topInvitersChartData = Object.entries(inviterCounts)
@@ -523,13 +539,24 @@ export const getInvitationNetwork = (data: MessageData[]) => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
     .sort((a,b) => a.count - b.count);
+  
+  const inviteeData = Object.entries(inviteeCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const topInviteesChartData = inviteeData
+    .slice(0, 10)
+    .sort((a,b) => a.count - b.count);
 
   return {
-    topInviter: topInviter.charAt(0).toUpperCase() + topInviter.slice(1), // Capitalize first letter
+    topInviter: topInviter.charAt(0).toUpperCase() + topInviter.slice(1),
+    topInvitee: topInvitee.charAt(0).toUpperCase() + topInvitee.slice(1),
     totalInvitations: invitationLinks.length,
     averageInvitations,
     networkData: invitationLinks,
-    topInvitersChartData
+    topInvitersChartData,
+    inviteeData,
+    topInviteesChartData
   };
 };
     
