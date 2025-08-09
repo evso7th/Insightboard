@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
@@ -32,22 +31,12 @@ const CustomTick = (props: any) => {
 export function NicheExpertiseView({ data }: { data: MessageData[] }) {
   const { uniqueNiches, topNiche, urgentExpertise, nicheData } = useMemo(() => getNicheExpertise(data), [data]);
 
-  const unnamedNicheContext = useMemo(() => {
-    const unnamed = nicheData.find(n => n.name === '(Не указана)');
-    return unnamed ? unnamed.contextExamples : '';
-  }, [nicheData]);
-
   const handleExportNiches = () => {
     const headers = ['"Ниша"', '"Компании"', '"Упоминания"'];
     const dataToExport = nicheData.map(row => `"${row.name.replace(/"/g, '""')}","${row.companies.replace(/"/g, '""')}",${row.mentions}`);
     exportToCSV(headers, dataToExport, 'niche_expertise.csv');
   };
 
-  const aiInput = {
-    dataSummary: `Всего уникальных ниш: ${uniqueNiches}, Топ-1 ниша: ${topNiche}, Экспертиз с высокой срочностью: ${urgentExpertise}. Есть большая категория ниш "(Не указана)", примеры контекста из которой: "${unnamedNicheContext}". Данные показывают, какие ниши наиболее упоминаемы.`,
-    viewDescription: "Это представление анализирует нишевую или уникальную экспертизу, упомянутую в данных. Оно помогает выявить трендовые специализации. Особое внимание уделяется категории '(Не указана)', чтобы понять ее содержание."
-  };
-  
   const chartData = nicheData
     .filter(n => n.name !== '(Не указана)')
     .slice(0, 15)
@@ -124,8 +113,6 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
             </CardContent>
         </Card>
       </div>
-      
-      <AIInsight input={aiInput} />
     </div>
   );
 }

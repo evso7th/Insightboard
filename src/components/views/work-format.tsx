@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
@@ -21,11 +20,6 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
     const headers = ['"Формат"', '"Спрос"', '"Предложение"', '"Баланс"'];
     const dataToExport = formatData.map(row => `"${row.format}",${row.demand},${row.supply},${row.balance}`);
     exportToCSV(headers, dataToExport, 'work_format_analysis.csv');
-  };
-
-  const aiInput = {
-    dataSummary: `Самый востребованный формат (спрос): ${topDemandedFormat}. Самый предлагаемый формат: ${topOfferedFormat}.`,
-    viewDescription: "Это представление анализирует популярность различных форматов работы, сравнивая спрос и предложение на фулл-тайм, удаленку, проектную работу и т.д."
   };
 
   const chartConfig = {
@@ -100,8 +94,6 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
             </CardContent>
         </Card>
       </div>
-
-      <AIInsight input={aiInput} />
     </div>
   );
 }

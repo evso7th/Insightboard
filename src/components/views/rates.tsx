@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
@@ -20,11 +19,6 @@ export function RatesView({ data }: { data: MessageData[] }) {
     const headers = ['"Роль"', '"Сред. ставка"', '"Мин"', '"Макс"', '"Кол-во"'];
     const dataToExport = rateData.map(row => `"${row.role}",${row.averageRate},${row.minRate},${row.maxRate},${row.count}`);
     exportToCSV(headers, dataToExport, 'rates_by_role.csv');
-  };
-
-  const aiInput = {
-    dataSummary: `Найдено ${validRatesCount} валидных ставок. Средняя ставка: ${Math.round(averageRate)} руб/ч. Данные показывают анализ ставок по ролям.`,
-    viewDescription: "Это представление анализирует ставки оплаты. Оно показывает средние ставки по самым популярным ролям и предоставляет разбивку по зарплатным ставкам для каждой роли."
   };
 
   const chartConfig = {
@@ -99,8 +93,6 @@ export function RatesView({ data }: { data: MessageData[] }) {
             </CardContent>
         </Card>
       </div>
-
-      <AIInsight input={aiInput} />
     </div>
   );
 }

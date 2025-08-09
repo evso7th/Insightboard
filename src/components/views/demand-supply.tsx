@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
@@ -40,15 +39,6 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
     const headers = ['"Роль"', '"Спрос"', '"Предложение"', '"Баланс"'];
     const dataToExport = roleData.map(row => `"${row.role}",${row.demand},${row.supply},${row.balance}`);
     exportToCSV(headers, dataToExport, `demand_supply_by_role_${selectedYear || 'all_years'}.csv`);
-  };
-
-  const aiInput = {
-    dataSummary: selectedRole 
-      ? `Анализ для роли "${selectedRole}" по годам. Данные показывают изменение спроса и предложения.`
-      : `Статистика за ${selectedYear || 'всё время'}: Всего ролей в спросе - ${rolesInDemand}, Всего ролей в предложении - ${rolesInSupply}, Дисбаланс: ${imbalance}. График сравнивает спрос и предложение для топ-10 ролей.`,
-    viewDescription: selectedRole
-      ? `Это представление показывает годовую динамику спроса и предложения для конкретной роли: ${selectedRole}.`
-      : "Это представление анализирует рынок труда, сравнивая спрос (запросы на роли) с предложением (предложения ролей). Оно показывает, какие роли наиболее востребованы, а какие наиболее доступны, и демонстрирует баланс для каждой из них."
   };
 
   const chartConfig = {
@@ -159,9 +149,6 @@ export function DemandSupplyView({ data }: { data: MessageData[] }) {
             </ScrollArea>
           </CardContent>
         </Card>
-      </div>
-      <div className="lg:col-span-2">
-        <AIInsight input={aiInput} />
       </div>
     </div>
   );

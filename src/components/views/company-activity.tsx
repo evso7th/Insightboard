@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from '../ui/button';
 import { exportToCSV } from '@/lib/utils';
@@ -77,15 +76,6 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
       const headers = ['"Компания"', '"Предложения"', '"Спрос"', '"Уникальные роли"', '"Это автор"'];
       const dataToExport = companyData.map(row => `"${row.name}",${row.offers},${row.demands},${row.uniqueRoles},${row.isAuthor}`);
       exportToCSV(headers, dataToExport, 'company_activity.csv');
-  };
-
-  const aiInput = {
-    dataSummary: selectedParticipant 
-      ? `Анализ для участника "${selectedParticipant}" за ${selectedYear || 'все время'}. Данные показывают спрос и предложение по ролям.`
-      : `Топ-1 компания по предложениям: ${topOfferingCompany}, Топ-1 компания по спросу: ${topDemandingCompany}, Общее число упоминаний компаний: ${totalMentions}.`,
-    viewDescription: selectedParticipant
-      ? `Это детальное представление активности участника "${selectedParticipant}", показывающее разбивку по спросу и предложению для каждой роли.`
-      : "Это представление фокусируется на активности различных компаний и участников. Оно определяет ведущих участников по предложениям и спросу и позволяет детализировать данные по каждому из них."
   };
 
   const chartConfig = {
@@ -162,7 +152,6 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
             </CardContent>
           </Card>
         </div>
-         <AIInsight input={aiInput} />
       </div>
     );
   }
@@ -267,7 +256,6 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
         </Card>
       </div>
 
-      <AIInsight input={aiInput} />
     </div>
   );
 }

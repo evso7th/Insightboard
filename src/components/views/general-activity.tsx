@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
@@ -52,11 +51,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     const headers = ['"Дата"', '"Отправитель"', '"Тип"', '"Роль"'];
     const dataToExport = latestEvents.map(row => `"${row['Дата']}","${row['Отправитель']}","${row['Тип события']}","${row['Роль']}"`);
     exportToCSV(headers, dataToExport, `latest_events_${selectedParticipant || 'all'}.csv`);
-  };
-  
-  const aiInput = {
-    dataSummary: `Статистика для ${selectedParticipant || 'всех участников'} за ${selectedYear || 'всё время'}: Всего событий - ${totalEvents}, Предложений - ${offers}, Запросов - ${demands}.`,
-    viewDescription: `Это общая сводка по активности для ${selectedParticipant || 'всех участников'} за ${selectedYear || 'всё время'}. Здесь показаны общие количества различных типов событий и визуализирована динамика активности по времени.`
   };
 
   const chartConfig = {
@@ -211,9 +205,6 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
         </div>
       </div>
       
-      <div>
-        <AIInsight input={aiInput} />
-      </div>
     </div>
   );
 }

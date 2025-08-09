@@ -7,7 +7,6 @@ import { getInvitationNetwork } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
@@ -70,11 +69,6 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
         setSelectedParticipant({ name: participantName, type });
       }
     }
-  };
-
-  const aiInput = {
-    dataSummary: `Топ-1 приглашающий: ${topInviter}, Топ-1 приглашенный: ${topInvitee}, Всего приглашений: ${totalInvitations}, Среднее число приглашений на участника: ${averageInvitations.toFixed(2)}. Таблица содержит все связи приглашений "от -> к".`,
-    viewDescription: "Это представление отображает сеть приглашений между участниками. Оно показывает, кто кого приглашает, выявляет самых активных приглашающих и самых востребованных участников."
   };
 
   const chartConfig = {
@@ -237,8 +231,6 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
           </CardContent>
         </Card>
       </div>
-
-      <AIInsight input={aiInput} />
     </div>
   );
 }
