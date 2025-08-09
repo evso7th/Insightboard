@@ -39,15 +39,6 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
     exportToCSV(headers, dataToExport, `details_${selected.type}_${selected.format}.csv`);
   };
 
-  const handleBarClick = (payload: any) => {
-    if (payload && payload.activePayload && payload.activePayload.length > 0) {
-      const format = payload.activePayload[0].payload.format;
-      // More robustly determine the clicked bar (demand vs supply)
-      const type = payload.activePayload[0].dataKey;
-      setSelected({ format, type });
-    }
-  };
-
   const chartConfig = {
     demand: { label: "Спрос", color: "hsl(var(--primary))" },
     supply: { label: "Предложение", color: "hsl(var(--accent))" },
@@ -74,15 +65,14 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
                         <BarChart 
                           data={chartData} 
                           margin={{ top: 20, right: 30, left: 10, bottom: 50 }}
-                          onClick={handleBarClick}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="format" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} interval={0}/>
                             <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={[0, 'auto']} />
                             <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
                             <Legend wrapperStyle={{fontSize: "12px"}}/>
-                            <Bar dataKey="demand" fill="hsl(var(--primary))" name="Спрос" radius={[4, 4, 0, 0]} className="cursor-pointer" />
-                            <Bar dataKey="supply" fill="hsl(var(--accent))" name="Предложение" radius={[4, 4, 0, 0]} className="cursor-pointer" />
+                            <Bar dataKey="demand" fill="hsl(var(--primary))" name="Спрос" radius={[4, 4, 0, 0]} className="cursor-pointer" onClick={(payload) => setSelected({ format: payload.format, type: 'demand' })} />
+                            <Bar dataKey="supply" fill="hsl(var(--accent))" name="Предложение" radius={[4, 4, 0, 0]} className="cursor-pointer" onClick={(payload) => setSelected({ format: payload.format, type: 'supply' })} />
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartContainer>
