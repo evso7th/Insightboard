@@ -201,7 +201,7 @@ export function CompanyActivityView({ data }: { data: MessageData[] }) {
             <CardTitle>ТОП-20 компаний по числу предложений</CardTitle>
             <CardDescription>Нажмите на столбец для детализации</CardDescription>
             </CardHeader>
-            <CardContent className="h-[350px] w-full pl-2">
+            <CardContent className="h-[400px] w-full pl-2">
             <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={top20CompanyChart} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => e && e.activePayload && handleParticipantSelect(e.activePayload[0].payload.name)}>
