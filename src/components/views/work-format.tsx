@@ -34,7 +34,7 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
     if (!selected) return;
     const headers = ['"Дата"', '"Отправитель"', '"Компания"', '"Роль"', '"Контекст"'];
     const dataToExport = detailedData.map(row => 
-      `"${row['Дата']}","${row['Отправитель']}","${row['Компания'] || ''}","${row['Роль']}","${row['Контекст'].replace(/"/g, '""')}"`
+      `"${row['Дата']}","${row['Отправитель']}","${row['Компания'] || ''}","${row['Роль']}","${(row['Контекст'] || '').replace(/"/g, '""')}"`
     );
     exportToCSV(headers, dataToExport, `details_${selected.type}_${selected.format}.csv`);
   };
@@ -129,7 +129,7 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
                               <TableRow key={index}>
                                   <TableCell className="font-medium">{row['Отправитель']}</TableCell>
                                   <TableCell>{row['Компания'] || '-'}</TableCell>
-                                  <TableCell className="text-xs">{row['Контекст']}</TableCell>
+                                  <TableCell className="text-xs">{row['Контекст'] || ''}</TableCell>
                               </TableRow>
                             ))}
                         </TableBody>

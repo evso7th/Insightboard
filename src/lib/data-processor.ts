@@ -275,10 +275,12 @@ export const getCompanyActivity = (data: MessageData[]) => {
       participants[key].demands++;
     }
     
-    const roleList = processRoles(item['Роль']);
-    roleList.forEach(role => {
-      if(role) participants[key].roles.add(role)
-    });
+    if (item['Роль']) {
+        const roleList = processRoles(item['Роль']);
+        roleList.forEach(role => {
+          if(role) participants[key].roles.add(role)
+        });
+    }
   });
 
   const allParticipants = Object.values(participants).map(p => ({
@@ -344,19 +346,21 @@ export const getCompanyDetail = (data: MessageData[], participantName: string, y
   const roles: { [key: string]: { offers: number; demands: number } } = {};
 
   filteredData.forEach(item => {
-    const roleList = processRoles(item['Роль']);
-    roleList.forEach(role => {
-        if (!role) return;
-        if (!roles[role]) {
-            roles[role] = { offers: 0, demands: 0 };
-        }
-        const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
-        if (eventType === 'предложение') {
-            roles[role].offers++;
-        } else if (eventType === 'спрос') {
-            roles[role].demands++;
-        }
-    })
+    if (item['Роль']) {
+        const roleList = processRoles(item['Роль']);
+        roleList.forEach(role => {
+            if (!role) return;
+            if (!roles[role]) {
+                roles[role] = { offers: 0, demands: 0 };
+            }
+            const eventType = item['Тип события'] ? String(item['Тип события']).trim().toLowerCase() : '';
+            if (eventType === 'предложение') {
+                roles[role].offers++;
+            } else if (eventType === 'спрос') {
+                roles[role].demands++;
+            }
+        })
+    }
   });
 
   const companyDetails = Object.entries(roles).map(([role, { offers, demands }]) => ({
@@ -627,5 +631,5 @@ export const getWorkFormatDetails = (data: MessageData[], format: string, type: 
     const typeMatch = (type === 'demand' && eventType === 'спрос') || (type === 'supply' && eventType === 'предложение');
     
     return typeMatch && formatList.includes(format);
-  });
+  }).filter((item): item is MessageData => item !== null);
 };
