@@ -72,7 +72,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
   
   return (
     <div className="flex flex-col gap-4 md:gap-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard title="Общее число событий" value={totalEvents} icon={BarChart} />
         <KpiCard title="Количество предложений" value={offers} icon={Briefcase} />
         <KpiCard title="Количество запросов" value={demands} icon={Users} />
@@ -106,7 +106,7 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
           <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                <CardTitle>Активность по дням {selectedParticipant ? `- ${selectedParticipant}` : ''}</CardTitle>
-               <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2 flex-wrap">
                 <Button variant={selectedYear === null ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(null)}>Все года</Button>
                 {uniqueYears.map(year => (
                   <Button key={year} variant={selectedYear === year ? 'default' : 'outline'} size="sm" onClick={() => setSelectedYear(year)}>{year}</Button>
@@ -217,5 +217,3 @@ export function GeneralActivityView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-    

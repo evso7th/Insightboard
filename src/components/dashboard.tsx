@@ -12,6 +12,7 @@ import { RatesView } from './views/rates';
 import { InvitationNetworkView } from './views/invitation-network';
 import { WorkFormatView } from './views/work-format';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from './ui/scroll-area';
 
 interface DashboardProps {
   initialData: MessageData[];
@@ -37,15 +38,17 @@ export default function Dashboard({ initialData }: DashboardProps) {
       </div>
       
       <Tabs defaultValue="general-activity" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="general-activity">Общая активность</TabsTrigger>
-          <TabsTrigger value="demand-supply">Спрос vs Предложение</TabsTrigger>
-          <TabsTrigger value="company-activity">Активность по компаниям</TabsTrigger>
-          <TabsTrigger value="niche-expertise">Нишевые экспертизы</TabsTrigger>
-          <TabsTrigger value="geo-rates">Ставки</TabsTrigger>
-          <TabsTrigger value="invitation-network">Сеть приглашений</TabsTrigger>
-          <TabsTrigger value="work-format">Формат работы</TabsTrigger>
-        </TabsList>
+        <ScrollArea className="w-full whitespace-nowrap">
+          <TabsList>
+            <TabsTrigger value="general-activity">Общая активность</TabsTrigger>
+            <TabsTrigger value="demand-supply">Спрос vs Предложение</TabsTrigger>
+            <TabsTrigger value="company-activity">Активность по компаниям</TabsTrigger>
+            <TabsTrigger value="niche-expertise">Нишевые экспертизы</TabsTrigger>
+            <TabsTrigger value="geo-rates">Ставки</TabsTrigger>
+            <TabsTrigger value="invitation-network">Сеть приглашений</TabsTrigger>
+            <TabsTrigger value="work-format">Формат работы</TabsTrigger>
+          </TabsList>
+        </ScrollArea>
         <TabsContent value="general-activity" className="space-y-4">
           <GeneralActivityView data={data} />
         </TabsContent>

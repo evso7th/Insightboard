@@ -93,7 +93,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
 
   return (
     <div className="grid gap-4 md:gap-8">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard title="Топ-1 приглашающий" value={topInviter} icon={Users} />
         <KpiCard title="Топ-1 приглашенный" value={topInvitee} icon={Star} />
         <KpiCard title="Общее число приглашений" value={totalInvitations} icon={Share2} />
@@ -109,7 +109,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
           <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topInvitersChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }} onClick={(e) => handleChartClick(e, 'inviter')}>
+                <BarChart data={topInvitersChartData} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => handleChartClick(e, 'inviter')}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={150} />
@@ -179,7 +179,7 @@ export function InvitationNetworkView({ data }: { data: MessageData[] }) {
           <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfigInvitee}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }} onClick={(e) => handleChartClick(e, 'invitee')}>
+                <BarChart data={topInviteesChartData} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }} onClick={(e) => handleChartClick(e, 'invitee')}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} interval={0} width={150} />

@@ -62,7 +62,7 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
 
   return (
     <div className="grid gap-4 md:gap-8">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <KpiCard title="Число уникальных ниш" value={uniqueNiches} icon={BrainCircuit} description="Без учета категории '(Не указана)'"/>
         <KpiCard title="Топ-1 ниша по частоте" value={topNiche} icon={Star} />
         <KpiCard title="Экспертиз с высокой срочностью" value={urgentExpertise} icon={Zap} />
@@ -76,10 +76,10 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
             <CardContent className="h-[350px] w-full pl-2">
             <ChartContainer config={chartConfig}>
                 <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 200, bottom: 5 }}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 150, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                     <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} allowDecimals={false} />
-                    <YAxis type="category" dataKey="name" width={200} interval={0} tick={<CustomTick/>} tickLine={false} axisLine={false} />
+                    <YAxis type="category" dataKey="name" width={150} interval={0} tick={<CustomTick/>} tickLine={false} axisLine={false} />
                     <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }} />
                     <Bar dataKey="mentions" fill="hsl(var(--primary))" name="Упоминания" radius={[0, 4, 4, 0]}>
                     <LabelList dataKey="mentions" position="right" offset={5} fontSize={12} fill="hsl(var(--foreground))" />
@@ -129,5 +129,3 @@ export function NicheExpertiseView({ data }: { data: MessageData[] }) {
     </div>
   );
 }
-
-    

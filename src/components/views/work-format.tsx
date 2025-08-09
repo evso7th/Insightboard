@@ -35,7 +35,7 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
   
   return (
     <div className="grid gap-4 md:gap-8">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard title="Самый популярный формат в спросе" value={topDemandedFormat} icon={Users} />
         <KpiCard title="Самый популярный формат в предложениях" value={topOfferedFormat} icon={Briefcase} />
         <KpiCard title="Всего форматов" value={formatData.length} icon={Scale} description="упомянутых в данных"/>
