@@ -611,3 +611,21 @@ export const getWorkFormatAnalysis = (data: MessageData[]) => {
         chartData: formatData.slice(0, 15)
     };
 };
+
+export const getWorkFormatDetails = (data: MessageData[], format: string, type: 'demand' | 'supply'): MessageData[] => {
+  return data.filter(item => {
+    const formatValue = item['Формат'];
+    const eventTypeValue = item['Тип события'];
+
+    if (!formatValue || !eventTypeValue) {
+      return false;
+    }
+
+    const formatList = processFormat(formatValue);
+    const eventType = String(eventTypeValue).trim().toLowerCase();
+    
+    const typeMatch = (type === 'demand' && eventType === 'спрос') || (type === 'supply' && eventType === 'предложение');
+    
+    return typeMatch && formatList.includes(format);
+  });
+};
