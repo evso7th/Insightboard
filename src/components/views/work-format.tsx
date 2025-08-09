@@ -42,7 +42,8 @@ export function WorkFormatView({ data }: { data: MessageData[] }) {
   const handleBarClick = (payload: any) => {
     if (payload && payload.activePayload && payload.activePayload.length > 0) {
       const format = payload.activePayload[0].payload.format;
-      const type = payload.activePayload[0].dataKey as 'demand' | 'supply';
+      // More robustly determine the clicked bar (demand vs supply)
+      const type = payload.activePayload[0].dataKey;
       setSelected({ format, type });
     }
   };
