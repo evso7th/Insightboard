@@ -1,86 +1,96 @@
 'use client';
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { RussianRuble, BarChart as BarChartIcon, Download } from "lucide-react";
+import { KpiCard } from "@/components/kpi-card";
+import { getGeoAndRates } from "@/lib/data-processor";
+import type { MessageData } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { ChartContainer, ChartTooltipContent } from "../ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { exportToCSV } from "@/lib/utils";
 
-interface AIInsightProps {
-  input: {
-    dataSummary: string;
-    viewDescription: string;
-  };
-}
+export function RatesView({ data }: { data: MessageData[] }) {
+  const { validRatesCount, averageRate, rateData, boxPlotData } = getGeoAndRates(data);
 
-// ЗАМЕНИТЕ ЭТОТ URL НА URL ВАШЕГО API-ПОСРЕДНИКА
-const API_ENDPOINT_URL = 'YOUR_API_ENDPOINT_URL';
-
-export function AIInsight({ input }: AIInsightProps) {
-  const [insight, setInsight] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleGenerate = async () => {
-    if (API_ENDPOINT_URL === 'YOUR_API_ENDPOINT_URL') {
-      setError('Пожалуйста, укажите URL вашего API-посредника в файле src/components/ai-insight.tsx');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setInsight('');
-    try {
-      const response = await fetch(API_ENDPOINT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(input),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      if (!result.insights) {
-        throw new Error("Ответ от API не содержит поля 'insights'");
-      }
-
-      setInsight(result.insights);
-
-    } catch (e: any) {
-      setError(`Не удалось сгенерировать аналитику. ${e.message}. Попробуйте снова.`);
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const handleExportRates = () => {
+    const headers = ['"Роль"', '"Сред. ставка"', '"Мин"', '"Макс"', '"Кол-во"'];
+    const dataToExport = rateData.map(row => `"${row.role}",${row.averageRate},${row.minRate},${row.maxRate},${row.count}`);
+    exportToCSV(headers, dataToExport, 'rates_by_role.csv');
   };
 
+  const chartConfig = {
+    averageRate: {
+      label: "Сред. ставка",
+      color: "hsl(var(--chart-2))",
+    },
+  };
+  
   return (
-    <Card className="bg-primary/5 border-primary/20 shadow-inner">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-semibold text-primary/90 flex items-center gap-2">
-          <Lightbulb className="h-5 w-5" />
-          Аналитика от ИИ
-        </CardTitle>
-        <Button onClick={handleGenerate} disabled={loading} size="sm" variant="outline" className="bg-background/80 hover:bg-background">
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {loading ? 'Генерация...' : 'Сгенерировать'}
-        </Button>
-      </CardHeader>
-      <CardContent className="pt-4">
-        {loading && <p className="text-sm text-muted-foreground flex items-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Анализ данных...</p>}
-        {error && 
-          <Alert variant="destructive">
-            <AlertTitle>Ошибка</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        }
-        {insight && <p className="text-sm text-foreground/90 whitespace-pre-wrap font-sans">{insight}</p>}
-        {!loading && !insight && !error && <p className="text-sm text-muted-foreground">Нажмите "Сгенерировать", чтобы получить аналитику для этого представления.</p>}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-4 md:gap-8">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChartIcon} />
+        <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
+      </div>
+      
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
+         <Card>
+            <CardHeader>
+            <CardTitle>Средние ставки по ролям (ТОП-10)</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[450px] w-full pl-2">
+                <ChartContainer config={chartConfig}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={boxPlotData} margin={{ top: 20, right: 30, left: 10, bottom: 50 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="role" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} interval={0}/>
+                            <YAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} domain={[0, 'auto']} />
+                            <Tooltip content={<ChartTooltipContent />} cursor={{ fill: 'hsl(var(--muted))' }}/>
+                            <Bar dataKey="averageRate" fill="hsl(var(--chart-2))" name="Сред. ставка" radius={[4, 4, 0, 0]}>
+                                <LabelList dataKey="averageRate" position="top" offset={5} fontSize={10} fill="hsl(var(--foreground))" formatter={(value: number) => value.toLocaleString()} />
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-start justify-between">
+                <div>
+                  <CardTitle>Сводная таблица: Ставки по ролям</CardTitle>
+                </div>
+                 <Button variant="outline" size="sm" onClick={handleExportRates} disabled={rateData.length === 0}>
+                    <Download className="mr-2 h-4 w-4" />
+                    CSV
+                </Button>
+            </CardHeader>
+            <CardContent className="h-[485px]">
+            <ScrollArea className="h-full">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Роль</TableHead>
+                    <TableHead>Сред. ставка</TableHead>
+                    <TableHead>Мин/Макс</TableHead>
+                    <TableHead>Кол-во ставок</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {rateData.map((row) => (
+                    <TableRow key={row.role}>
+                        <TableCell className="font-medium">{row.role}</TableCell>
+                        <TableCell>{row.averageRate} руб/ч</TableCell>
+                        <TableCell>{row.minRate} / {row.maxRate}</TableCell>
+                        <TableCell>{row.count}</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </ScrollArea>
+            </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

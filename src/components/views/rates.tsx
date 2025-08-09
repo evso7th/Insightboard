@@ -8,18 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
-import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
 
 export function RatesView({ data }: { data: MessageData[] }) {
   const { validRatesCount, averageRate, rateData, boxPlotData } = getGeoAndRates(data);
-
-  const aiInput = {
-    dataSummary: `Найдено ${validRatesCount} валидных ставок. Средняя ставка: ${Math.round(averageRate)} руб/ч. Данные показывают анализ ставок по ролям.`,
-    viewDescription: "Это представление анализирует ставки оплаты. Оно показывает средние ставки по самым популярным ролям и предоставляет разбивку по зарплатным ставкам для каждой роли."
-  };
 
   const handleExportRates = () => {
     const headers = ['"Роль"', '"Сред. ставка"', '"Мин"', '"Макс"', '"Кол-во"'];
@@ -97,9 +91,6 @@ export function RatesView({ data }: { data: MessageData[] }) {
             </ScrollArea>
             </CardContent>
         </Card>
-        <div className="lg:col-span-2">
-            <AIInsight input={aiInput} />
-        </div>
       </div>
     </div>
   );
