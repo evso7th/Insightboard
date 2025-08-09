@@ -4,16 +4,22 @@ import { RussianRuble, BarChart as BarChartIcon, Download } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { getGeoAndRates } from "@/lib/data-processor";
 import type { MessageData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { ChartContainer, ChartTooltipContent } from "../ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import { AIInsight } from "../ai-insight";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { exportToCSV } from "@/lib/utils";
 
 export function RatesView({ data }: { data: MessageData[] }) {
   const { validRatesCount, averageRate, rateData, boxPlotData } = getGeoAndRates(data);
+
+  const aiInput = {
+    dataSummary: `Найдено ${validRatesCount} валидных ставок. Средняя ставка: ${Math.round(averageRate)} руб/ч. Данные показывают анализ ставок по ролям.`,
+    viewDescription: "Это представление анализирует ставки оплаты. Оно показывает средние ставки по самым популярным ролям и предоставляет разбивку по зарплатным ставкам для каждой роли."
+  };
 
   const handleExportRates = () => {
     const headers = ['"Роль"', '"Сред. ставка"', '"Мин"', '"Макс"', '"Кол-во"'];
@@ -29,8 +35,8 @@ export function RatesView({ data }: { data: MessageData[] }) {
   };
   
   return (
-    <div className="grid gap-4 md:gap-8">
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+    <div className="flex flex-col gap-4 md:gap-8">
+      <div className="grid gap-4 sm:grid-cols-2">
         <KpiCard title="Кол-во найденных ставок" value={validRatesCount} icon={BarChartIcon} />
         <KpiCard title="Средняя ставка" value={`${Math.round(averageRate)}`} icon={RussianRuble} description="руб/ч" />
       </div>
@@ -60,7 +66,6 @@ export function RatesView({ data }: { data: MessageData[] }) {
             <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                   <CardTitle>Сводная таблица: Ставки по ролям</CardTitle>
-                  <CardDescription>Все роли, для которых были найдены ставки</CardDescription>
                 </div>
                  <Button variant="outline" size="sm" onClick={handleExportRates} disabled={rateData.length === 0}>
                     <Download className="mr-2 h-4 w-4" />
@@ -92,6 +97,9 @@ export function RatesView({ data }: { data: MessageData[] }) {
             </ScrollArea>
             </CardContent>
         </Card>
+        <div className="lg:col-span-2">
+            <AIInsight input={aiInput} />
+        </div>
       </div>
     </div>
   );

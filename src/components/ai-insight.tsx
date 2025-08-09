@@ -3,12 +3,17 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, Loader2 } from 'lucide-react';
-import { generateInsight, type GenerateInsightInput } from '@/ai/flows/generate-insight';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface AIInsightProps {
-  input: GenerateInsightInput;
+  input: {
+    dataSummary: string;
+    viewDescription: string;
+  };
 }
+
+// ЗАМЕНИТЕ ЭТОТ URL НА URL ВАШЕГО API-ПОСРЕДНИКА
+const API_ENDPOINT_URL = 'YOUR_API_ENDPOINT_URL';
 
 export function AIInsight({ input }: AIInsightProps) {
   const [insight, setInsight] = useState('');
@@ -16,14 +21,37 @@ export function AIInsight({ input }: AIInsightProps) {
   const [error, setError] = useState('');
 
   const handleGenerate = async () => {
+    if (API_ENDPOINT_URL === 'YOUR_API_ENDPOINT_URL') {
+      setError('Пожалуйста, укажите URL вашего API-посредника в файле src/components/ai-insight.tsx');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setInsight('');
     try {
-      const result = await generateInsight(input);
+      const response = await fetch(API_ENDPOINT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.insights) {
+        throw new Error("Ответ от API не содержит поля 'insights'");
+      }
+
       setInsight(result.insights);
-    } catch (e) {
-      setError('Не удалось сгенерировать аналитику. Попробуйте снова.');
+
+    } catch (e: any) {
+      setError(`Не удалось сгенерировать аналитику. ${e.message}. Попробуйте снова.`);
       console.error(e);
     } finally {
       setLoading(false);
